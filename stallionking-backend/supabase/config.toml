@@ -1,0 +1,13 @@
+project_id = "stallionking-tracker"
+[auth]
+enable_signup = false
+[functions.track]
+verify_jwt = false
+[functions.book-parcel]
+verify_jwt = false
+[functions.create-staff]
+verify_jwt = false
+[functions.update-staff]
+verify_jwt = false
+[functions.notify-parcel]
+verify_jwt = false

@@ -1,0 +1,2723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stallionking Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#EEF2F0; --surface:#FFFFFF; --surface-2:#F4F7F5; --border:#D9E1DC;
+    --ink:#142520; --ink-soft:#526059; --ink-faint:#8A968F;
+    --accent:#0F6E5C; --accent-ink:#FFFFFF; --accent-soft:#E1F0EA; --accent-line:#BFE0D3;
+    --amber:#B96A1E; --amber-soft:#FBEEDD; --amber-line:#EBC996;
+    --blue:#2A5FA5; --blue-soft:#E6EEF8; --blue-line:#BFD5EE;
+    --red:#AE3527; --red-soft:#FBEAE7; --red-line:#EFC1B8;
+    --green:#1E7A45; --green-soft:#E5F3EA; --green-line:#B9DEC5;
+    --neutral-soft:#EAEDEB; --neutral-line:#D3DAD6;
+    --shadow:0 1px 2px rgba(20,37,32,.06), 0 6px 16px rgba(20,37,32,.06);
+    --radius:12px; --radius-sm:8px;
+    --font-body:'Libre Franklin',ui-sans-serif,system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1512; --surface:#152019; --surface-2:#1B2721;
+      --border:#2A3A33; --ink:#E9F1EC; --ink-soft:#A8BAB1; --ink-faint:#71847B;
+      --accent:#49D9AF; --accent-ink:#062A20; --accent-soft:#163B30; --accent-line:#265A48;
+      --amber:#E7A758; --amber-soft:#3A2A15; --amber-line:#6B4C22;
+      --blue:#82B2EA; --blue-soft:#17293C; --blue-line:#2E4A6B;
+      --red:#EA8A7C; --red-soft:#3A1D18; --red-line:#6E3128;
+      --green:#74D89A; --green-soft:#153524; --green-line:#2C5B3E;
+      --neutral-soft:#22302A; --neutral-line:#3A4A42;
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1512; --surface:#152019; --surface-2:#1B2721;
+    --border:#2A3A33; --ink:#E9F1EC; --ink-soft:#A8BAB1; --ink-faint:#71847B;
+    --accent:#49D9AF; --accent-ink:#062A20; --accent-soft:#163B30; --accent-line:#265A48;
+    --amber:#E7A758; --amber-soft:#3A2A15; --amber-line:#6B4C22;
+    --blue:#82B2EA; --blue-soft:#17293C; --blue-line:#2E4A6B;
+    --red:#EA8A7C; --red-soft:#3A1D18; --red-line:#6E3128;
+    --green:#74D89A; --green-soft:#153524; --green-line:#2C5B3E;
+    --neutral-soft:#22302A; --neutral-line:#3A4A42;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--font-body); margin:0;}
+  h1,h2,h3{font-weight:700; text-wrap:balance; margin:0;}
+  button{font-family:inherit;}
+  ::selection{ background:var(--accent-soft); }
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px 64px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{border-bottom:1px solid var(--border); background:var(--surface);}
+  .topbar-inner{max-width:1180px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-mark{width:38px; height:38px; border-radius:9px; background:#fff; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;}
+  .brand-mark img{width:100%; height:100%; object-fit:cover; display:block;}
+  .brand-name{font-size:17px; font-weight:800; letter-spacing:-.01em;}
+  .brand-tagline{font-size:12.5px; color:var(--ink-soft);}
+  .clock{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-faint); white-space:nowrap;}
+
+  .nav{display:flex; gap:4px; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:4px; overflow-x:auto; max-width:100%;}
+  .nav button{border:0; background:transparent; color:var(--ink-soft); font-size:13.5px; font-weight:600; padding:8px 14px; border-radius:7px; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px;}
+  .nav button.active{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+  .nav button:hover:not(.active){color:var(--ink);}
+  .nav-bar-row{max-width:1180px; margin:0 auto; padding:14px 20px 0;}
+
+  /* ---------- Generic ---------- */
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .card-pad{padding:20px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
+  .section-head h2{font-size:16px;}
+  .muted{color:var(--ink-soft); font-size:13px;}
+  .hint{color:var(--ink-faint); font-size:12.5px;}
+
+  .btn{border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:13px; font-weight:600; padding:9px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; line-height:1.2;}
+  .btn:hover{border-color:var(--ink-faint);}
+  .btn-primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .btn-primary:hover{filter:brightness(1.05); border-color:var(--accent);}
+  .btn-sm{padding:6px 10px; font-size:12.5px;}
+  .btn-danger{color:var(--red); border-color:var(--red-line); background:var(--red-soft);}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+
+  label{font-size:12.5px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:5px;}
+  input,select,textarea{width:100%; font-family:inherit; font-size:13.5px; color:var(--ink); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:9px 11px;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .field{margin-bottom:12px;}
+  .form-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:0 14px;}
+  @media (max-width:640px){ .form-grid{grid-template-columns:1fr;} }
+  fieldset{border:1px solid var(--border); border-radius:10px; padding:14px 14px 2px; margin:0 0 14px;}
+  legend{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); padding:0 6px;}
+
+  .pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:4px 10px; border-radius:99px; border:1px solid; white-space:nowrap;}
+  .pill-dot{width:6px; height:6px; border-radius:99px; background:currentColor;}
+  .tone-neutral{background:var(--neutral-soft); border-color:var(--neutral-line); color:var(--ink-soft);}
+  .tone-blue{background:var(--blue-soft); border-color:var(--blue-line); color:var(--blue);}
+  .tone-amber{background:var(--amber-soft); border-color:var(--amber-line); color:var(--amber);}
+  .tone-green{background:var(--green-soft); border-color:var(--green-line); color:var(--green);}
+  .tone-red{background:var(--red-soft); border-color:var(--red-line); color:var(--red);}
+
+  .grid-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;}
+  @media (max-width:800px){ .grid-stats{grid-template-columns:repeat(2,1fr);} }
+  .stat-tile{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);}
+  .stat-value{font-family:var(--font-mono); font-size:26px; font-weight:600; font-variant-numeric:tabular-nums;}
+  .stat-label{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+
+  .table-wrap{overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border);}
+  table{width:100%; border-collapse:collapse; background:var(--surface); font-size:13px;}
+  th{text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); font-weight:700; padding:10px 14px; background:var(--surface-2); border-bottom:1px solid var(--border); white-space:nowrap;}
+  td{padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:0;}
+  tr.row-click{cursor:pointer;}
+  tr.row-click:hover td{background:var(--surface-2);}
+  .tn{font-family:var(--font-mono); font-weight:600; letter-spacing:.01em;}
+
+  .empty-state{padding:36px 20px; text-align:center; color:var(--ink-soft); font-size:13.5px;}
+
+  /* ---------- Track view ---------- */
+  .track-hero{padding:34px 0 8px;}
+  .track-hero h1{font-size:26px; margin-bottom:6px;}
+  .search-row{display:flex; gap:8px; margin-top:16px;}
+  .search-row input{font-family:var(--font-mono); font-size:15px; padding:12px 14px; text-transform:uppercase;}
+  .search-row .btn{padding:0 20px; font-size:14px;}
+  .chips{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .chip{font-family:var(--font-mono); font-size:11.5px; border:1px dashed var(--border); color:var(--ink-soft); background:var(--surface-2); padding:5px 10px; border-radius:99px; cursor:pointer;}
+  .chip:hover{border-color:var(--accent); color:var(--accent);}
+
+  .route-row{display:flex; align-items:center; gap:10px; font-size:15px; font-weight:700; margin-bottom:4px; flex-wrap:wrap;}
+  .route-arrow{color:var(--ink-faint); font-weight:400;}
+  .parcel-meta{display:flex; gap:18px; flex-wrap:wrap; margin:14px 0 4px; font-size:12.5px; color:var(--ink-soft);}
+  .parcel-meta b{color:var(--ink); font-weight:600;}
+
+  .stepper{display:flex; align-items:flex-start; margin:22px 0 6px; overflow-x:auto;}
+  .stepper-step{flex:1; min-width:88px; text-align:center; position:relative;}
+  .stepper-step .dot{width:26px; height:26px; border-radius:99px; background:var(--neutral-soft); border:2px solid var(--neutral-line); color:var(--ink-faint); display:flex; align-items:center; justify-content:center; margin:0 auto 6px; font-size:12px; font-weight:700;}
+  .stepper-step.done .dot{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
+  .stepper-step.current .dot{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .stepper-step.failed .dot{background:var(--red-soft); border-color:var(--red); color:var(--red);}
+  .stepper-step .lbl{font-size:11px; color:var(--ink-soft); line-height:1.25; padding:0 4px;}
+  .stepper-step.done .lbl,.stepper-step.current .lbl{color:var(--ink); font-weight:600;}
+  .stepper-step.failed .lbl{color:var(--red); font-weight:600;}
+  .stepper-line{position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--neutral-line); z-index:0;}
+  .stepper-step.done .stepper-line{background:var(--accent);}
+  .stepper-step.failed .stepper-line{background:var(--red);}
+  .stepper-step:first-child .stepper-line{display:none;}
+  .stepper-step .dot{position:relative; z-index:1;}
+
+  .rider-card{display:flex; align-items:center; gap:12px; background:var(--amber-soft); border:1px solid var(--amber-line); border-radius:10px; padding:12px 14px; margin:16px 0;}
+  .rider-avatar{width:36px; height:36px; border-radius:99px; background:var(--amber); color:var(--surface); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+  .rider-card .rname{font-weight:700; font-size:13.5px;}
+  .rider-card .rmeta{font-size:12px; color:var(--ink-soft);}
+
+  .timeline{margin-top:20px;}
+  .t-step{display:flex; gap:14px; position:relative; padding-bottom:22px;}
+  .t-step:last-child{padding-bottom:0;}
+  .t-step-line{position:absolute; left:11px; top:24px; bottom:0; width:2px; background:var(--border);}
+  .t-step:last-child .t-step-line{display:none;}
+  .t-dot{width:24px; height:24px; border-radius:99px; flex-shrink:0; display:flex; align-items:center; justify-content:center; z-index:1; border:2px solid;}
+  .t-body{flex:1; padding-top:2px;}
+  .t-label{font-weight:700; font-size:13.5px;}
+  .t-when{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+  .t-loc{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
+  .t-note{font-size:12.5px; color:var(--ink-soft); margin-top:3px; font-style:italic;}
+  .t-actor{display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-faint); background:var(--surface-2); border:1px solid var(--border); border-radius:5px; padding:1px 6px; margin-top:5px;}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(10,18,15,.45); display:flex; align-items:flex-start; justify-content:center; padding:40px 16px; z-index:50; overflow-y:auto;}
+  .modal{background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); max-width:640px; width:100%; padding:24px;}
+  .modal-close{float:right; border:0; background:transparent; color:var(--ink-faint); cursor:pointer; font-size:18px; line-height:1; padding:2px;}
+
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--bg); font-size:13px; font-weight:600; padding:10px 18px; border-radius:9px; box-shadow:var(--shadow); z-index:80; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+
+  .connbar{background:var(--amber-soft); color:var(--amber); border-bottom:1px solid var(--amber-line); font-size:12.5px; text-align:center; padding:6px; display:none;}
+  .connbar.show{display:block;}
+
+  /* ---------- Clients ---------- */
+  .client-card{display:flex; align-items:center; gap:12px;}
+  .client-avatar{width:36px; height:36px; border-radius:99px; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+
+  /* ---------- Auth / accounts ---------- */
+  .account-badge{display:flex; align-items:center; gap:9px; background:var(--surface-2); border:1px solid var(--border); border-radius:99px; padding:5px 6px 5px 13px;}
+  .account-badge .who{font-size:12px; line-height:1.3;}
+  .account-badge .who b{font-weight:700; color:var(--ink); font-size:12.5px;}
+  .account-badge .role-tag{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent);}
+  .login-wrap{max-width:380px; margin:44px auto 0;}
+  .login-wrap h1{font-size:20px; margin-bottom:4px;}
+  .staffid{font-family:var(--font-mono); font-weight:700; letter-spacing:.02em;}
+  .admin-card{display:flex; align-items:center; gap:12px;}
+  .admin-avatar{width:36px; height:36px; flex-shrink:0;}
+  .demo-note{font-size:12px; color:var(--ink-faint); background:var(--surface-2); border:1px dashed var(--border); border-radius:8px; padding:8px 10px; margin-top:10px;}
+
+  /* ---------- Top-right: notifications + profile ---------- */
+  .topright{display:flex; align-items:center; gap:8px;}
+  .icon-btn-wrap{position:relative;}
+  .icon-btn{position:relative; border:1px solid var(--border); background:var(--surface); border-radius:99px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-soft); padding:0;}
+  .icon-btn:hover{color:var(--ink); border-color:var(--ink-faint);}
+  .badge-dot{position:absolute; top:-4px; right:-4px; background:var(--red); color:#fff; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:99px; display:flex; align-items:center; justify-content:center; padding:0 3px; border:2px solid var(--surface); line-height:1;}
+  .avatar-btn{border:0; background:transparent; padding:0; cursor:pointer; border-radius:99px; line-height:0;}
+  .dropdown-panel{position:absolute; top:44px; right:0; width:320px; max-width:88vw; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); z-index:60; overflow:hidden;}
+  .dropdown-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);}
+  .dropdown-head h3{font-size:13.5px;}
+  .link-btn{border:0; background:transparent; color:var(--accent); font-size:12px; font-weight:600; cursor:pointer; padding:2px; white-space:nowrap;}
+  .notif-list{max-height:360px; overflow-y:auto;}
+  .notif-item{display:flex; gap:10px; width:100%; text-align:left; border:0; background:transparent; padding:12px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-family:inherit;}
+  .notif-item:last-child{border-bottom:0;}
+  .notif-item:hover{background:var(--surface-2);}
+  .notif-item.unread{background:var(--accent-soft);}
+  .notif-dot{width:8px; height:8px; border-radius:99px; background:var(--accent); margin-top:5px; flex-shrink:0;}
+  .notif-body{flex:1; min-width:0;}
+  .notif-title{font-weight:700; font-size:12.5px; color:var(--ink);}
+  .notif-text{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .notif-when{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); margin-top:4px;}
+  .profile-panel-top{display:flex; gap:10px; align-items:center; padding:14px;}
+  .profile-panel-body{padding:0 14px 14px;}
+
+  /* ---------- Copy-to-clipboard ---------- */
+  .tn-copy{display:inline-flex; align-items:center; gap:4px; cursor:pointer;}
+  .tn-copy svg{color:var(--ink-faint); flex-shrink:0;}
+  .tn-copy:hover svg{color:var(--accent);}
+  .tn-copy:hover .tn{color:var(--accent);}
+
+  /* ---------- Password show/hide toggle ---------- */
+  .pw-wrap{position:relative;}
+  .pw-wrap input{padding-right:38px;}
+  .pw-toggle{position:absolute; top:50%; right:4px; transform:translateY(-50%); border:0; background:transparent; color:var(--ink-faint); cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; border-radius:6px; line-height:0;}
+  .pw-toggle:hover{color:var(--ink); background:var(--surface-2);}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="connbar" id="connbar">Connecting to shared data…</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAABjnElEQVR42u29d4BkV3Um/n3n3vdeVefuyUEahVFACUmAJKJAIDKYaBsDthfsdbaxvfba2Nh4f8s657jGXrOADbaXnCxsQAgJJAQo5zCSJueOVfXeu/ec3x/vVXX1SJgRGpAE7zDMtLqrpnuq7nfvOed+5/toZmiiie/WkOYlaKIBQBNNNABoookGAE000QCgiSYaADTRRAOAJppoANBEEw0AmmiiAUATTTQAaKKJBgBNNNEAoIkmGgA00UQDgCaaaADQRBMNAJpoogFAE000AGiiiQYATQAArPrNFGZohrAfQ+Gbl+DbsfoNRijUoAKhLu87RpCsMMHmtfq2BxtViG/D+ldAAEJhgBJGOBjrRW/N0m9OgO/sqAAAEyiMiALhIDOq01AzIxsgNAD4zjtkAW9GwMhIC7RgsWUipAIEQZpZs/abFOg7NgmyqCaMAE0B9ZJAYdHMUwkBWQGgOQG+7dF0gb4duwxFlCToAV+G3dd+eXHXbjqBmgxWvZmpfr0WUbNLNQB4PJcADAogAOJ3fuHfL/uB77nyv/94PrcHZDRjAYtQEYrA1EqDaonQh4NFQwmEpoXaAOBxegIE0AAJBuD+L141uXuv3nprOXsoCkUjtDQXFvfeeOsH/rTYf3cuyGlEl8ihimjONNHCWcmvf0Q00QDgsVoBgAYvMPpoyLe+8NLe+U+cetYzx7acrMEEqknhrHf7//m93X/2lrvf92felZHiLSGERBQxEUoKSr9r2kQDgMdTnwFOVRCRoDCsveDSl/39e3nqiQjBA9Ekdw5FsD1zo4HS6XoNmQIhNSQKGBEWty9s+wyKvSZNy6IBwOMPASBVYDRJYmaGbHzjvR+/bP/nPuuqLpAmaI2f+l9+Zu7CV57yQz+bSwYEuCWTsgRcPDz7md/d8543H/jyPwKlNq9nA4DHXQ5kcAanEFEjYygOTszff8/732XlkhNNIwCfrV47cvwmt359gBN6FU+zjIhFZ3HXXRO9HUu7bicCm1vjBgCPuxMAJEyUaqIG5Lbo0jB37eUHrvm8YxKjAjh80zVy+5VYOpwZGABrw3ws4Nvj2arj5tc+a91TX2fwMANUodGAqKieDG1qgwYAj+EjAKDRQUEjHHqORTJWzm778L8gLDF1yBf2XP0Jd2BP98CiEEFys4hAl4b5Wz7S2/alE17yY+3jLo3RqSjMgGCwWEFKK7aRrvyODR4aADxmAVHmGko35g5+5T/mbr7SiRy+9sp48xcTjfO77hcAEAOZhrlb/unQR/+gne/KmcPgggERRlGSPUuW4A55WWpe0gYAj/EkaMB3JgAtcwS0IO2FXff/2wcA3H31FcnSoUw7ne03wAyWeikOfulv9n7wHTO9+z25dHAPoKAvQYUhJjT0tv/r/qvfVs5+EZBmx28A8FhOgYxW/UEA0CAmaSkTWWvvFf+R33fz5qc9OSQjLuSLC4tgENm181N/3Pl/f7JxaXeRShHb2H8fOFsmEkFjhMB0Tu/4F3ffew/v+tJwrtVEA4DH6AnQ/z8slmSee3MYnTi4954P/fmGpz5Vzrxkt1+95hmXaHfbA+/55c5lfzEhC+YkuNCmted2qc1Foq0CBVwu+V0K5uPnZTNnAzQMXxE0SDjaaOjQ39btpl6YWkZX5oJx5arEHvjcBza/4LXH/fjbNhy8e3q8ffuf/tLofZ+ZHpelBPS+bfOjiIuLB2KOJIMEMPW69NUdX/3H0eOftemkV5nbYAiEM62+AwExG6aWNgNnzQnw6KZAZgAIligNZi7dX4Z0oecwNzdmq5b0nr/67TXj+Zjorb//i2N3fna0pSWimE/gvKaalL14wBaXPFVTC4e+PHvF223+a9PHPVv9qWqJAjBEoyK3uC2GB4DC1KzuDEUgNm/DQ4Z7+9vf3rwK3/ociCYkCm9WMmlPrx3xfu+Onfvzg4WVqzTK3Oy+665YvOqymYUD42maS0qXJmKJz8kMKaI/jBOfkU2dHnZ+4uBX3qaLX2xteN7ICa/voZWYc8pSQkmX6AOdnX84O/fRZOwk56ZBY80gkuYEaFKgR2v/rxlshEEdCO/8E37ibae9/id3fOXyfdd8+vCtX+L8fbLz5qlWEif84TasxRGJGQuBqbQjM98tsXCou+/qucv/x5S/Yc6ybOoZwFRiPVJNRkhpYTHMXl/u+6hzZW/yten0qTAZtJ6aaADwaAEgmgVnLWMaHFOxW/7pT2e//IUtl75o3UXPOf7i56NcWNh28/6vXXHgpiux94aJxdlxgxsZ6box5wB6SDsNuZ/bUSQsF+6ZS1eVqy8Y2XyeEkJPHIphuyzdvTB/e14EN/7UMsfUyFZiBPCmoKCZvP+6Z3MzEvmtDkU0K11sBYeSaBWz1/z0q+0Ln8VkZmvXjpx8zuSFz1174SWjJ5wEW1i47auLV39m8Y6rtXdvNjo/nfl2kuUZSr8Qz3jFzFN/Yd+9H29PHjc2c5q026E7r/P395ZusvzWtHPfQuvE1Wf+T0k2F1qksk6s3X+Ttan3GgA8uiAwA0rmCVv59ns/9PrnzOx7YHI89QkkE8lacfVk++RTVp//rPEnP7u96cxycW7uxk8s3PjxuO+m8XCgPSHdEUlnzhq/5BdC6Mj8oc7ibXHpTgmz5OHol5ywkKnps38X469kVDAIM6JSmYiAAgms4dE1AHh0UiCYATSgFPVhdv6eyz81t+2W3v038uB9+dz+ifxwy+VZBrZHlzYd1zrljI1PfMbkmc/B2IkL22/Yd+O74rZPT+RLk9nIoTXjXjuZHJJ2p2Xj2srK0Ty6MFeumj79F8bW/3Q0SSxHbMERYn1RIgKueSMaADx6ABiUolEhUu/EOqvziwv79ixuu+7QvTf1tt8g++9g6I1zfnQs1U1nZk98/sT5l2Zrt5b775278V+62y4bKedHxsxGizL15o1pD5LOdadGTnzN6tPeUuhxqSuAnmKUcM123wDgsQcGNcBMNSrpnR9Ky7VzeGn3LfN3XtW58/O9nTdmYX6kJVy9xp/03MkL3tDaeGqcu3Hxun+d2/0ZZwdGkxZGY+JnZ8txbvr+jee8JdoGcNzRgFIphG8A0ADgsXQKVFJw1Q2tmakZLYYFi0tZewYQNQd6ARC6c9tvOnzzh+Kdn8pm7xtJgFVry1OeNv6kV42sOjefvffArf+sOz87bnu7ojj+xeuf/DbjmdFKRxFzICIr7bkGAg0AHntAqCNEetdd2HnTx945ZYdPvuQH3IYLNCpIIxwN6OjC/Qdu/OjS9Z8Ymb/BjZed6VNGtrxg5uyXyOQpnX3X7rzt3bG14ZQn/aLISYEiLASR1qrE5ppoAPCYXPc1MY5h8fADX/n3Ey64OHY6t733N4q5Pef+2G/L2ieVZo7wood23BHh1mw+rVy6/eAN71+47UNj5Y7RzOer16envnHytFdGhDKs8W4V0HVMYAQMdKgPmwYERxUNFeIRrmxltaT7M1haLXAzUK3WRIHBYGDFTyPUVNLWges+uP3Kj2965veu27Jhz6f/PJS96SdeSvHCw8X2q2795LtXbVzbXnUy0lUTx100dsKF3V55eOnOFLtx6LrD+7ePrn52mhxnMZqDM9I8KUYCkWaANBA4mmhugh9ZTYtoCFXCbQYlIsybINIQzBnMGcSEzhSAmihBU7pky1nnfuVT/6e3/YdQdGZiJ7/n6nD/ZxfnZxeuu+zQLV9dc/6LV532ZIOKIaCVzFy44dLjD9993vwN7+52b8tSSDYRxcwFsWxAd5DqPW2WfgOAb8v6p1NvNCVMrDKASVXNWHrxyAQAEQAAUUwtlISYSyQhDu388n+MSMGDd+y57mop4+jc7t3/8MuYX8yWdrRPfNrxL/ypYGudGaQUlkFT2vrprT86PnP+vXd+Yt0ZF4tbGw3CIBQgad6NpgZ4FEIVRjMSMGdkhJlFiXln/9L9d82MT2JkBmNj3ke4EchI9SSUe7Z//K/2X/a+yWxxYsu5c/feNs7ZIAkkT9TNJ+ObfuQPs9NfGwK8E0EAisg0QExjIolgSTUiTIg3SI9Imo2sOQEejQPADAwIgabROaX39FCKuFTzr37iH8PXrlw3NS7Tk3FqKhuZ5uT61tTM+Bh23/iF3s1XrbNcLe/d9sXxRPPUnLXaiv3JyNSr3t46/TUsy1S0ZEITxpYTUMykhNKYiSicEYjIYNJcejUAeFSOT5a9kGUtkK5WJdGIvOjlLh17+pt/Yse0Hv70P07sLyJGTXohiXmSLplrQ6YSA8wpxVmkOQUkD9obXbV++qQTCRddyOkdAiytrGUEgI2AEZWxhpSgEL45wZsU6FHa/YnbP/+RnVd+YSZBOw0Se+zksTdX9Lp5HrOxZHrClm65rtXtwatz0RyDOAoyUUUsvWTmzGt0rq1FmVJc0tJi/9Spk8/7r2svfG1wa8RUIGBUFgo6eJoAYoShJMB6C2uOgAYAx3aBA7BaykGlkvfU+kaXFjQIhUwkdHbddPW+Kz6R3Pqlzt67uRTaVjpXUFykRsRWllGoSRSSIhARp84ZxUzgRECj0NPMmXhJGCPah/3k2EWvWv+Ct1hrc1QViWRQSwAnIGuVFeMQyaiJBgDHtLoFWAGAiIQYFRZQJjGKa9fz5kt7Ovt3FIcOd/bszPfc6/be2fnyF6wzbwkJEwdxACLE6CACCigQEQrpjDQ4kqSAjiTg1DxSpOKwz42Pnv+6TS/9JfOtgFYUn1lJBGPKhtrZ1ADfhjOg9mykERAoYpn5hD4t5w/s/urlu67+wtwdd2Q770kW9sQkqMsmhe1k3pxYbIlTGFRNqh0b1jcA47JaAwkIWbEfqoc5aKRZynxdGg5d9/496K1/6S8w3eI1qoCIgthwm5sT4FseESpGGpVmUNFIl/S233H7Jz+46/brJ9at23jKmdMbTyjvvHHf+/4sy3f20lR1PDhz0ssACMSBoiKk0MREIA4gxVEIOOtv/OyfDBCnJiBaXrpIcvjxeU2Tc1617oW/zLETrIzBe5LNptUA4NsHgAgzLQW84xMfvvOD/7T5mU8764XPz9as7u7esevaq/df8Snces2kLUZRWJaImqN6JzQKKCqOJEzgXOXwQnEUIcUoBkchsQyAAo6GcZOApEvJnNNSvR7/7NUv/BW/8QItlY6UZrixAcC3vAaIAGESVT114cCBG6763Hlnn26HDt33Hx89dOuXws7tbr47LR0db/nIEdMyycvEhE6cJ1XE6MDK+U4gwuoEoNBJfQJABmCgOsKHlCVsXL3Bdx28g2mWFopy5gmrLv2F1qkvhLZBNoaqDQCOddOH0Fq8BABhSgNUoik9Rbudr115y7v/avbqq6YW50czpy2wZdFC4dLEnKcWSXB0nqAzEaOQYuJA0oQiFGcQiNQ5z6D2pRBi5gVeE5SC1BzgC8IJqZIwdcZyKds0+oyfmn7SD5qMmprQARE0wAMaYYAIWHWuGoA0AHh4G35gBClWsekZ0BOVqN4nEufuve1v/2rvv7x7ZGl/a2JM6rLVCJiLrHIbgZB0hBjFBvu6OKEY+p0fESNBR7j6A6lEqxxEqqoAJClmQlZHB5KEJknR8+0FrBl74itmnv7mMLo1Rm1RQYIOhkg1qLPq4yj0DR20AcDRr3+FmkBg9aIpWGiULPEL13/u5t/71XDD10baKTwtKqEiEFIcTIyu3uwppJAOEHXCoQwHEBEHVktcjAI4VI+XmuNAEZUaP9VTql+iTLzEhB3nJcho1zI74ekzl/6STT3ZTBJERgM8nIEBpgYWZIIGAA0Ajjb9qfo8RBSTmuBvOVybOz/2z7f97m+OHd6etBCrOzGhEKCJq5P7/rYNkeEToEpyKHWDf5D2mAjoAOFQCgQ4kCYOg+zIqgxKECQxQSp5gtKJK33WA2zV2ZMX/7I74cVq3sVSvRFOAGgEkrL6QZrV3QDgKAEAM6oYkNMU0WtIXbrtH//itj/5tZmiUGknCA4hOEiVxNdNHtIBHPRwBNXiZuwn+ux3gUwc6SBEdWKgfnoNAHoCWgPAkazOBEuphXel9w70jBAEh5Z4V8bO6Kbsgh8bOed1IZmMRkUihhQlEY1JXxK0iW8QzTaBZeMWIjI67aXe3f++P//a77/Vzy7OhbTkRAkXvYkZDaRBYP10iWRtgzeYxWUdIPv/UX0HVvdgrB8/+Gp9D8ZBe6f6HAjzAnUIDkpzSkmUUUORyki+r/zSH+7/3K/b7HUZOqlFM0TSWJJ586Y2J8DD6AAZTJSBGiy2hHv+/bJrfuYHQFvzwtee+drvVZ3f8y/vOvz5z2RJ1cg3CCCs0h4R1I18V9UABuqRJ4DTKkESWv8E4INOgCh1pkSIQUARB6++pITqO0cPxxDFF77lXBCiiyxMbR194g9MbH2ZJZti1Wtt2kANAB4OAmr3oo4sZhgLO+792A++aKQIT/mf/2vmiRfe8y/vPvyZ/xd27fK9wiGnq8pWoGrm1Fe87OOhyu+V9XKvHlM1Rlk1bOpqoaqGXb/VI2RVUhPiajHzmjUkhGhdKgjoTMVIMVEIvZNCYldWtba8ZuKpb5bRrYhplEhKUwQfTTTX6lCaMbroElMn8cZ3vnMpD5f+08fEcNmb35DcdNXqDC5LoqSDDAew/oD7kAbD0HobpEUrNpvBM7jyLqtOkEy4rGky6LRW3E+rvsS+8wtNQIOpqYdM28Ls3R/Yntjxz3oruNrqQf0GAA0Aju4YVKgzS9xovuOOez750Zf+f+8YHW1d9v3fO7Xt5vaqkQ4qDn6sU/aauLac95P99L5O7DEgvZEE+7y65SSfBgMppEldCxgHVo/VaodUfFQIaaBVTAqyUrmt6wqDwSjIx21nzHeBKPsd1CaaIvgoXwI6eKUA7oFrrh07dcuqF73kyj/8Vf/AV6fHXF4kUkxkpTiU7BM7B/v5ikriP82y6lrZVhbfJCqHa4KgVZt+H0PGvqhKtdCrT1YJW9W9NSOo1J4PhU3MrL0ImDKYM23e1uYEeBhVMFUCTYA9u/ac8PxLl+66e+7fvri+PTbPrrD0sXQSqtmAQcKzPIpCLLd6BsnOUAo0aA9xKA2yQf1NAmao9n8RqfKrWD9SASdcxpuxIk9juVdEsjDXyzaNrLswwgtKGhpdoOYEeBgZUDXuBYDjfvT4k/Ze8fmZQ/tIRrrEEJKik0hkwmXJNXLwJ1YkOMtrtU6M6hVfr9X+pyvpTqvN8xDybtHtqtFIo6iIkkqheELMyEpwq1JfMbW+2r8R3nyrSNyY45hYPSvQrP7mBDjqiGAU8xoBOe7Uc8Khg4v33tZJShFN1XysOpc1tw2I0cUqGzepsvPlerOf0Nf3ClZNL9bJukJImJFGUrPCa8ZOqn6Bkp797MVypLz9S+3QZctaWZmwFdJSWChcARdAtUgyy9JWJoISSBQtZcys47XMk1HfGtdKeG5ZILGJBgDf8BA0ShC4GE03nXnRbZ94X/e2W0bciI8FGXKfGhKHYKJBjKJiSAyRVivCEVbnP2aDDR4AYbS+TYvViU99WhgkmgCIhFeVZOM5W1/0i3N3Xjt325fndt86u/+W9lIRuOCsbX4sjE4nU2tHpmdce3Thvuvz+Tsnx9RZieioRYHewbzdS06lXy19r+DmZG8AcNQZEGCCgqBaOjG+4Yyzrr3vzvUulvCB3uBZKY1LMI+2eq+ul8AcE9Uq4RhkQDUTmcv3wlXZXN8LD2oGQpOFTDPHrJcgK8ule+5aFdPJ014+edrzEeeLuQfyw7PdMC9q7fZ0OrXej84wGQGy8vCNO77wzvtv++ikHSjpetk6TqzlxlOPO/f1hjZMiUQlWuOI1ADgKEMJdSQsUkE30vIZ88CeshXhPDQxg6mLVOdiMAoXM2ZqYyWDq+8RlxkMHMBquSTuy0ks18QKS9VTXMFyPC3C/ruL3Xcmmy4MMRG3Np1Zm85gHAAqhV0BEAMESKafcuLLt+4/6VlL++6YmFm/eubE9vT6ZHwtbH2sbhK0biw1o8MNAI7uBDBICK63lKauPDR7w1/8WbbQRZslgxAelhhyca5sH+yVyYnTEwudVtnLDKUbtP9Zb/l1tjNcCQwfNEDV5DGKZWpOABFHqOveN3/vF1cfd0EAHU2iGpeIBNYyVgIVgLcIdSrU6TVnvWHNsu2GloCpeGcwNTZKKQ0AHlYX1BSJe+CaG2744z9pHbqHe+8fa7XVcicOQmjeI/aWErPprd/3ynWruPNv3pklUYgg3lVLur+zD6305c7QoEbg0DEhMQ1J6SW4MKKu1WJn9s7PrbrolZKto7UgohSnCWE0rXxODaqwKKmDoYhwqgI1DxOIeVdCndFBolQs7SaaNuhDLPehy6jqSkmAEMtN5z5xy9mnLx7YWeSLh2bnF2bzhcOdzuHO3JIe8GPTz3juc/72r0/83lfe+m+Xj/ZCmbDn0QoqsP7lQN3TJw0kudzoH9TEAPqfJxFVSkjpTKN65zPZcefSXdelEK9qRkPL6AonhXORiSGhtZy1CarAvDfxSjqJXsxDBUWtl1XbQvJb9uLZN7r2e3yd/99lZDgD1KqrJKVRgxJuQPPJ77tz/1evOvDAnVicc+JaUzOrt5yYHX9ia8OG3bdef9Nf/vaa+26fSuxQlpjDZCiihznCQQgR9tVQqmkviAwGX0CpH0YBRSixIsNVLDqXSIgIZ71y4+t+P3KG4ioc2ZH1xKP+4g2ndA0AHpcRgABzpgYDfQrEfO8DCzt3hoMHLO/4Mk+jMtfcaTcrlxYOhO075m66o7z7rilZcCMhQsEWhHSFZ73Ka+In+/InfdJoNfhLsXoGkn3WtMSa3VnDRpzYol+16gf+tHXq91A7YGZsVJ+bGuDYN32c0hVAyxHF4W0f+9fbPvwBu+vudHHW8kMlOj5au2T0oo7eVKBOkLXTGe8h5YIzgR/LxTOWqZqXYVO6Qe27nPUsy8vJUJlQXwsMMSgMsPFy3+yV71l/wpMtWdv/ZAOBBgDHGABGjd67HXfedft/XGb33pmUdjDMtw/s2ZA612oXmZNWStcFQ4rEsdIzQYcafZoUTEyMFl2kKFBLH/ZpoX2az3AzlP3U3KpBXYMJxQhWbLbqUQHOJ47bPjd77fsmn/6LGqoq/DFi/RL7dQUbADy+I/dFsDKLrrs4/5TvecXk5uOAovPAvXf/67/c/Z5/GD28Z2pSSiy5IIK0cBEsyQLeIEkS05EISMxbsUzUMcn6XJ/B0if64s2DLJMkdJgyVJ8AXMYOYUoGcePoHLjq3dmWJ41sforGR3esq/+vMLVlxqr7TioAvhtrgMJU1ZzFxKeABo3BJHHOAQduuPyL/+s3w7VXbhlLYWri1MHEnMCLOFo1qWguwqkgcciQlKhkUepxMPZVTyh1eVBVwJEiqEcia7k4EMOj8eYIUeepxnzj09d+3x/J+Km0b4UI3DJ36T99CFcWTisJHt8pMPjuK4IHTTyLEBgFCpLdON/2o/Hw3qvf/tbZD7973aQXnwZQRETgCEowX6qQYo5w4khnTvta5zUA4GrRlFrgpJIPcpVORNUaojgYl6URxQFiDolIKNIgksSQhTNesf4Vvw5/nMVSRSITAr4/iP+gf4w8+J9piEo1OEIIqx4qpoTBHJQAzBuhhFv2sq+djJeAWQ2HQjGr5ZzFPcFblm1O07OBTSWFKJyJVUNsVJgAgGiVUxhCtVs89qUpmplgFEudA7t2bTzluDLPJZtwce5rf/n7t7/zL9bo3Jq2mGdJn0AdNTpfvaX1+nYQCmotxGrGV2plq3r21yhSXe1W5hhVn1Qqkxeh0ZwTcTQqJHFicEVk0hIe1jE86Qc2Pe8X1E0ZnEBpapKBwodA80MCoBr3H9QmJSwqU4U4AXHQbA7wVIOWQKnI1UpoEYuDZWebdm+33p0u7hYsBaDwLfPTWWtra/zpydhFdFuBMVMaDdCqZysIgAMERqMCSvjHOAS+2wFggBb5x//4dy5+5SunTj0ndNVgSRvb/+Oj17/z9/xNV08Z/NioT4Mwgg6uz4N2oMhA2VMqGdBK0KFKclxN/xcPVDrprJ5F1z8BBgAgtUycEG2V0tFJV8TPctqf9fK1z/up2DrdonorIb4SWX9Qpn7kIlMUhNI81AMwUVggHdjT8EB37qZ89ibtbBcsQQtnZeKiWalWgnOqc7AgzJ1EVhpH6qNzIYkRMcpqpCen489sjzzRyan0m4Aswggn5sAIRKDyr6kk4ZsT4LEMADUK7/7E/732L9/74l//75NPvQCcMCgh6B7a/tlP7//8Jxe++vlW73AqoZpRGUr3KWLoSzxIfbE1UMDlQPcBtVpoXyulVj2pbARYXReENAo4Wra7LZov2rFMPOct0VNfOnPJL4fJc4IiQUxqMdFv1LVRI0syV4Mhi0xTlFbevbj7s2HPp9m5XWyBouqjOKMFMIiQIrGycqLRmSGg0kLyQSBGb/DiE9UQxCtX+2Srb5/p03PS9Cym64ExiyMqBhaEg/rHvpB7kwIBZoidy378TQtfvOz4lz1z5vxLVp3wlGyKcK3eXL7wpU8c+ujf+9mDSFx0/SS+f4dVqUBDTGqx21q5ZKD7Cfn6AKjlQSthOQZfJHRJyDrtaM61A5n06NDTkXLdBTMX/5g7/pIcI17taDBgWt15qxCUjunepd2fzrd/RObun8Be55fyBLnLvGVCNRejaKGhNIpFB6VLKJ7eoSps4BwJFAE9aByVFhKvwuBCFBdlxslxrn2aH3l6ll0MOy6SykDAP+bbjA0AoNFA9Hbe8ukfft3oXTf7yTEbW+1GpDSN3by1dGgmU3qJtfAt+oI/oFDYv+IVrfWCXJXfS0WFqNSe4SCspXP7FAlUqtF9IXWYRM/UaHl7Po2tVhzrtpYgPnFSGotsXfuJrxk573WufZrB0fQb0N0smFUF+Gyx/7Od+96vc9dkdkiSWgPPSHPwLEytW6Cro4WsYrbaOe+kDDGPumBYdL4brZeSDgiYLP2G0fGxRGc9HkhbVfVTmosGrzoWZZ20zx+ffJ24Z8AyY0EkTQ3wODgBYgzik8M3XHPFz/7ExN5bp0cDYipC8YUmCPCGlojRdxNYYqk5hEQh4hmHdvFBCmTiHPtK6H2925UfVPpwrLlD1X2a0JuLmi4lMUnQKtJCKFEcnQmtgymsf+LY+W9on/AcuBmYKKLRASSCALCkHgSQCDrgcFj80vy2Txe7vjSq2xK/oGxFY0xDcJaqpLGY07CkGzl63viGp43OnJ1kx4mfplgsDoew13o7Qm/P4tL+aEveJ+3xM7Kxs1ujUwcOvqfc/+7RLBiEjmAphIiaWNC2Jk+bmPnvjhfADI95MkcDgFoZroQlInO3fvnzv/6zcuOXp6dbiUgaTDyDBIoJPV10kouNaSrmuokl5gxOh1ucWBZMH6RAxuWEx/rkn0EXiJWOT79KFtBMQFESFScOTsyJOcJCL1sdNl009oRXjR3/XJNpjRGE1K0YoQpdBJbC3B3zD/xbufeTre79mQRLyuAKmneWQbRMer1ovc4Yx8+bPvnVo+suhd9gSGRFxmKA9htNHSADWkAP1lrq/vP8Az83kc1G5wkv8ERUp0TSgs5jKlv9ayPpf0HVg31sM44bAEBhBrhINaXXsP/uL/3BHxz+xPvHtDc6PopEwaKFMrFMnYS0KH1bJLSsl2pbfS2GDqnc7wjRFdr/jhTtX3iBrE6J2jW1AkDfRY9VnxSstEdRDeFX9gIqpk7opIXYgx0a25Bted7as98oE+dDUyOqAWWHQ8XhLy/cf7nuutKFezN/yFPNEhVAEJ1E770iFr1Z3dw+/g2rT32DJMdbTALNMQgMSOoRtvrmAIYIFGYtQIAeta1289573sLi5tF2kbhc4AyMImamms/pllWbfmdk5JWGRaL1GGcbNAAAYAERcM6oRXQJIOXOT3/8hvf8Xfemq1aFxfGMiR+F93Rdo3aRtHzZ9jH4MUoQ1k54dBQZpEBkLQY6fAJgyCvA6Di4MgOr4rj62KzykBQQNV1UaeYI0tF55yBlzrKcOT09800jJ75CktXAQnHw1oVtn9Y9/9HKb098jD6qlCotk0xNvPQczJh2Q6eDravO+sWxTS8LGDFLBSIwUKtrPCyLcIGEmQJq5o1G5ogtcZ3F2ffv3/lJ7d2Wuv2UMpLRMdpYyhMn17xoavUPqa6n6xJZcwI8DlqhQFnSiTkXCLMiQUpq7+D2yz+1/XOfOHTz9e7grIs9kW5ojWabj5/o7J2Y32/puPnCVWVATXAgxMQva0ezNoCpcv1+ClQdBfX5ABEq1TmpimPQTPr+AxVPyFXaiQph9AaXJOYSsYJuMRnnhnNHNj8tzt5T7r7ah+2py0kPqAnUiQpAE0bQRKTMZS7ZuuZJb2mtekWho549QeVTCYAKTyjrkRr02W+mUMIrVFAAKYzgksbtvcWbymJ3GXIjmCZJsn609YQk2QxMQJOBeFIDgMf+ZVgETYVaORgFBvSc8xQPxMW9d8/fd2t5eL9GtGY2rj7rtAc+/Dd7/u8fT42OiUVH64/CVFqfKp71bfFgGKD2C0Nf/bzqFA284+sUiDSKQVh7SHJgoQcTA7WiToREiyQ6pIm2PBGQx0Sc+sSb+W4hCG40tdIxgkKJkECBMl1Ut4iTNzzp17I1L+hamph47U8Q19t0/DrXahAEgxGJQQBVIxkFBQAsb/OMgFkUFgIHSx/7AGhmgmGEOucUokaaEcHDzKsZipLixtadNrbutOGnZFzdiuKQ99mRA1v5gTxE/TtXzAgvk6XZl4urfDFsmZfW54oOdOT6AwZWq95qop6lg8spS5EjkDSTonSuJ0YHZzELeZGEUsSRJoziI7ypLYQ16y74mXTN80Jst2CQjrkEpAJEUjG1l9HA5f2BVq1tVroTRnUmMFG2DISCNFogA4RABmsZoIzymG8DNQDov+Ey0O8BCaWnGaS03iI0Q5ppf5fLd97wwOWfWJVkyhIaIVKtCsC0mgauL3o5rHVrlR4cK/dH9OXirA8PVirPVg/YVNUngah9tnVFW1MRUAkBUjMHMUNZGCGl0KA0+igRUgpTmERqcIVpmC82T5/1lpG1L+maazNCHZhUKZdUJrGV2dNDvT4ggNaQFryDENYXBKh16DzgHDD4SwTy2OeLNgAY2uy4/J/UAHN06e5t19357r875eQT5KQtSTpa7ti27zMfGH/g5hYR8yQkOhiF4fLuPqwhXfH+rZ9TD3JrWz4uaksXklU+yuGBsmGFiepTlYJoZdEBg9C0/u71mIEJLUyW2SJdNyszF3mwmJg8+TVTJ7200AmKGAhniprnyofzIi1/fOTT5EFPeBzwpRsAPHQIzQyFYf0JJ913aPvd//YP7ZlpTdooZ6dcjlY8TD8aMiIAOiyLxcFYDDksplt9qjoHhjRSbFhRaDAnCdqKMUsQtCEjjmWQkcNPrtQpam3oSp7U1BZ6Lt30PTNn/LjaOkPiDbRQ1cWNiG6jHvP1bgdccEZEN7Lq3Lf8Su+4TSNxdoy7R0aKDOLyDPClL4360BtlRcDH8CLGsqTzEQxO658VtfGMYXieePAIrHSd4UPVq/3ZNEonC+pL7u1l+bqXrzvvp80dZ/CJRG/1qeVWSMdZA4AmhleSGEqPQgNGznj26T/3W9vjmHQphcuZqbRbKqmVwxLpHDr5lz0Blk0hMawXyuEBSQ75Sy43HzmckXEoBVr+i4ZU2ocNOAwwdUHT/b1xd9z3br7of2rrdLUoVEGv/76bqwpYRCCYRbNgFvqyit8t0aRAX7c15OHFEGF57J3wvDfgUOfWv/iN4/NCR0PXhxEzocQVVl+1o9cAAZWuD48oNPjgomOFsERfDQgPvcM/xPY/fCjUCBDD/jjePv1H1j/h54CxYDBLhKHKuiIBqIP1pd3dg+qA7xZBigYAX+cAIAgHQpy2zFngCd/7kzo1eu8fvHUm35WkLsa0xJhYqEahVFTEnCho9dDsUAuINBOr5IMqq2FUv1dmw6wLYmPNPqjmzqz6TP9jDERC6w9suYVP9Ktsq06vTijHTnz56rN+LOpkASSgN4U5tZZZ1e5yoAK56d6yu03inJoXP+nbJ0E2BaOD0SLoIukaAHzXtodYmwAjRjvp+T84MdG+9Y/enu7eNr7KBXYTCGFey6q+NXMDrwAMzgJgOK+oTwbWLaO+VKKhXyKDVo0YEvXDapcBDrw2wOGKYni37hcbSNdOHf8Cs420wjlv5iBRoUZxAoclxO35wh357JfKpdsl3Es7rGxDZjh6emvVi1oTlyimUA114jv5MGhugo+6KlYLsUwT17v/9hv/4re7X/nAmuleQk9KxXtzQpLmAde3BB7Qe0TZnw0Y0KH7JFAh+yPCojWftLoAJky0f3NcTdBDBXAg+zcGQjhY/xxAPaFmPRvRrW9affp/szBB14kyEjVJRYHFGO7vzV5d7P83LlyXhSVxJZJCnRqdIolIo59ozbx6ZO3PFrLBWc9pCicNAL7rqwJTVTUInEg4fM97/2T3/3vnaDw0Oj4qjmSgRBF19bB8X/NQhAJKRD0KQwzmAVgxIGRggg1nZN3CrIhDJoZhARWBClE7aVsFADpE1rdZAxopXD7XOmPVk34/Gb9UUTgCFmPv1u7Bf88P/gc6dyXW8RLocnOuFKekiDqJNO9YhDApq948sumnIlYLS6L9nXoKNAA46hMA0RCciUZRgRc9fM3nb/vHP+zefc06N7+qTUuwlGRCptXosKAaBBMhnHJA+q/oQE6r9VoDoGJhumpNPzQA6ulKR+tTpvs+8qYcUIzUSAoSsSK2wwlvnDz754PlOndT7+BXFg9d2e49MGaHPDX3SeEF7BjF2DKoF/Usg1exdETDEkdlzc+MrP+ZaBOOaADw3R4BRkSnCgjUxRiReZu7d8cVH9/9+Q/afTeMWWd0PKNF7+BdrdHfX/HVkECllSsk4HRwAlSPMRpdf8S+DwMVrTR3USc8lX4WqhEC9DUprB6qJKigwQnEUoSFZCM3PVW7nbh0m+nBEZp3BRGUomLmAuirK2mFhagBUCnTVppKJr7scNXI2p9pT/+o2Tj5ndkXagDwcLKgekLEjIQpQleTxCPV3tz+G6+6/1P/kNx22ZqsgPPiHRkpBueFRhf74hEDtYhqFyfJ5ZEAZ1brp4OsVnZNEKrJoWImtGpQvT4EYAKTioNUsyTMUT09ShNGpCMqIS2CD4lp6X2JFp0TKwgYXbCiU8aSU0g2oLUhjUWZ74np7lVjHW/Ww+mjG9/cmvhB2HikAnQgav2fRhnuux4QpujSWqQQlu+5869/Xq/50NSoLyR10nFSBj/RsjK62JdR4XC6X63+mjVWL3QjWe/3boCBim9kdDQHQ10Ho06TqE5BiED7BOyqcWQCJwKhUoUGxui9U5cApdeOUyttIV/lV188ueEFI5Nn+2QtTDvzNx7Y85fZ0hdmvA9JspjMjKx6w+jU60uuVbQSVUGA+O+MW9QGAI+oLoZq4STRMpZE5vW+q2783Tdt6N1vyQhc6SQPbjxDMBcgpKOwHhCr+6UDuwBWXSAbDAwYrZ/e1BPGRqWjCYzVjEGNpYqYXIOBAyGWwRUBAZiDUI2uTEi3lJRt0fZiWJjLzll34pvG1nwP3DoApqow57oIO/bc8zbpfXqkbepYYtKPXjw68zqfPlV1qhR6mPuOOAEaKsQjuiWA9K+hEuZGf9x5rZPPzcsyYazrVphWwg3EslU8h//EMHECKwkVGCJKcNlkFcvWrMvDBRg40nPo8ahSp8q8SYI3iKaF6xwq1dqv3PLEvx7b8MZgMyV6kbkSJmWuqbnTV2/52a47qSilVbpRLKDzqYVdb+8d+iPhdkMOhO+M97ABwCNCQKQTEGLCMjMTNzKx9eyCAosqnoBDsIFNGPp052pVViOPfbl0sNanMJiZLWt7mtXTARjSQTyCPQRbWaQ8xGEVKUZJQ56UMtuZiatfsvr8X/Wj55kmTFToCBPpOJaJwBB866Lpdd9fhhSRweANLbunmP+rxQN/nemCmG8A0JQAsPqK19PgzABObD45+LZUIiWEQ1hB/uERNE+s/PyQ7+qRJ8DAT+AhKKEPJusPuRb08WCEpsH8/m4rmXn95jPfrunJFS4cRJCItaij1PFKgEXNj69+KUbOWrSgroB0qEwQis7nYnETie8MAmkDgEeSAZmDisHMqWTVqnNT69keU1NQxOARpT/lMuylMdi2uWJZH8HuP4L/eQQ9lCtmJofmDFhfraGqCCi1MLppsb/b8htfvfHs/2pyvIQWqWbeLDEEQ7emGJkAPlLJk8ZX/9BiHLeSDJNAgOQBO/PyBiDH0NxPA4DvWgxIvfggJgZARkaZjSuS1ELupUTiLAxcU0mrEp1qXRsNNLOookq1PsWt+sCoBuvvtYOvaq1XJWZUNa1mEmrmaT1UxgAxqlhh0ChUMC/0cHdmdMuPbzjzrXBbAaMDUN0yQOBI32fXGRmdiakbmX5WMvW6xcWJQjpmwUemPKjlDqADAywYTAEgPk6x0ADgEVbBHPpIATiXmGQKeiuVGumHtvWh/IZDaRCtfzZYNShstP7AmA0l/TbwsEB/ArI/KXYEg9pa1jGki268ENVSOp1kzk6ePuPnVz/hR9U2myVCBcPgoAEIJP3mkQIqBpoHVq0/7g3p5Mtmu+1CxHTEaxKL+4DZvkEyDNFqOYnHXzRs0GMcalQKHYiYmAEIFH7d9WEcHpVZOUfbnyfua0aQBHQ4hxo4HbEiVRv7R0yADyyMCYuk23X5zNPXn/MT7clnFpoR4qFYFv/5+hleFGKcctqaE9+Cvex1PpRSHVqxvEfjLnEnRRNQBZGP21yoOQGOXU1sBsDyHmJhUhE0K9L/UEW70ja+Wv1CDteuQ3okVv/OKvVZ0d3ptzv7JW4lZcg6Gep5Aiad7mJvLD3hhzY/9XfTyRcEGwGdFyMU8IrEHoQBVtdsIKisZsaspfKENetf4NPV6nqQnug+K+4GopoDhPB43DaFmhPgWJ8A8wd8MQfRaA5QgZK1xSIHhe3AtYiEVcyKwV5+xGq0QWq0otlTTxDbADNaPbKfHXlDp5t15NTV5/3w+HGvUVvNaM6FfqvUGZwC7uscS6AHAiTWxmII3fn9KHvMgplJSIvFa9ut54BbKtfXx+/71QDgWBYEAMq5/Wk+K6MW1Ve2dmAw+iNy9OGdvB6jrAZijphxWT4WKhWeQca0YhCynsKpBFFgJDudkXz83I3n/2I2dWmMFEQBYVQCcAJHM8fIB1N6qjF/E9BXQnECg93bW7gycfuhaSTExZBfrcWtzDYCBktB7buENynQd9V+D4uwAMAKhRmss/M20dLgrSpaa6PTmsxTLWVbrn0NhEl19aX16mdFEzJUH8Cs30SqBymH9CSMRqqgVAKILgQX/VIeF8fO33zRr7amnmlKD5BiUu3rifX3/a+TuA/sgWnwBg8g791i8SsZl6gZ4OhKsz354jXe5vg4J0Q0AHikmb8CCoMWJknMD5XbrnPeqSZAJDXSIsTqtQsTq5o8YJ20V71OVJ+HgWrQ+gHoP3i5GWr1IHvlZiqmYgJzJkGc0SVa5j1bSJ+46YJfcCNP0TKDUF2oT5eKhofBTcJD2rdUNjjoTzUDKOfn79ByVuKogSY51UNKLb9gcZvCmcTHr4l8A4BH9vIZHZhAzbyAcfcd+Z57xCVVS3Qo8QdWXGVhZUa/Qkhr+aKXD5JXHkwGy/IjDYnpqFhq8Auqs+nxG5/ym63xZ1nZojirfS6+ObGT6runo9mpvXxiKcRoBmsBiWeIYVss7yBoULCIj089lQYAj6zxQ4sATZWOwOKtV/iFvc45WXbwHUikDPhryxe7HGa6cRkIVZ40aIPWBfNQj6jSCa2G5CM1urwdci06h+XUdU9528iqS6K2zPkoBsRv3PH8T/+NMD8y+bzxtd8/29u0FHJiyWkhMXHaCcVuB0qdoj0uAdAUwY8MAdVsCNXEId83d/Nn2xKJSid38BAZXGBJf5nXK9kelDvUC79SGLJlMlwlElGVDzJg+xBgEKorJe8slSesffKvjKx/hZqKlAoSkZVb9TevbEKFKacm1/y0k6379v5FjF8bc1HSXkSweBgooI5MnEgDgO/Czg8TGMwcXfe2z5X33TiapLBYGb0ckcUMdOH697vDt8E24PYMNN+sEsni0CVZ1RDloBBgdf3VzbODunndeb8wdtKrg8LRCCeo2q8J4A3fvFYtCTMpMTO26pXZyIkH937owNJVsbffIdswtVVRkkK4x+nEZAOAR7L/k4C3YPQM3T1XfLCdL2grdSj6/RwsCyEOs/jr/9lwBbAy8X6Q2Nvy8MCQ4q6pGbvdskxPX3/Rr45ueomaeEZFAiOHu/ys7O6+mXOAxsQ0MJaWJe2nrz/hjKK4ZWH+vnYy1hq9uEA7EQpKhTg8/hS0momwh5fwsG5+GkgzlmRSLjFpH/jqJ/b83U+uxeGC4qr5r0oEpa/4IK52giGrwUiDWDXZKEKjiVCrOfd63pd00L6hfN9ZntBUJOZJqSIjoTzcyxbXPH3zRW9pTV+kcQwuEkZLVtbYK3/8R/DPhxlXSPayX+iYPU700JsT4Fj0fmrVQ5WYBz/i5+7d/8k/HYmzKpDKSaW/69vKSa/hvZ61a4Ba34MFQ9Yy/XOg1l632kwDIj3Q+ehz8IEwkW15/okX/Khrn2Vli1J1iPTrrPVHujqHJxn6pYpxaDatqQG+0zMe1OKdNqDwGxyx+7J3te75XLvdVnphOZzccMjuop/9k0NzjaRUJwA4dMv7oClHMzMaDSomDmnUxW7aOu3VG5/y38TWWUgqtQj0NUK/5ZkDjw2omjbo4yu0+n9UAKZqzrfmvvaxvZ9770ialMpqM1+xMoby9q+TbZpVz6r+xPCII+qlbwOOkEXLSkjPejJ20nFnvynyODMPX8lMBEL5nSJY0gDgsVcC9JmXDopYOKfFjhse+JffmS725TIamRBqK/OB4Q/Yj/55wBU1b30pYMOYQX9kbDAdJhQ1zOpkuvVlaD/BBRMWhgCURJDK+AINBBoAfAuO/XrO0CgWBdDOofve945kz81tMWrwiI4QDlOdl+UgjhzbHTxqOc2pN/tKG3ro8TIEJvFYklDYxLmjp7wsIhVRpRPzYo6WVDmtMX7XOr40APjWHQAKrTLsqHRg557/90fFTf8+nkg0cYhktHqGqyLc1wOQFWJMqtlFMyjEKjdsw0DvX40GkeqXwQy1aauzLhGBxBkhEeBibI+e/EzfOg0BRo19YdGBWluz+zcAOPZREgVLaDCjk7Dz43/bu+zd0wksqmKg3lbt6zacx4NWd2bqYYCKA2c1GGjD2VXfZK9WETI6wgIlSlqJhS5FFybPmDrxeWqZo7IyLzjyjGnKgAYAx/4EcIRELbzwwGfedeADfzLtO6rV3Hq1xAdTWsOTv+RA7mGIDfR1WivV4re+3oMZGSQtJYmMQDB185icPu3Vrv3kaGZuaWDA2kQDgG9tJAGu8M4nB696z553/+6Mzi1lZaQOGaj0fV8e7OC4coe2r1dk9x9ppjA1qGcQmNAcSlrsFUmy/pnjW18ZY6o0wMNc8xY2APi2HAAMknH/tZ+4/x9+Y7rYYcjSIhEzqzL2AV8fwxWsDeOAA+nC/te4Mmq53f7fIIRDIabeolhRWLbgT177xB82t0lppMDaMMHjVpGhAcDjqAA2eh66/iPb3vn2VUv7Su8CrF0ODE0r1s+y7uFQtsNlb9SVW/8RxAEuu+UtT8BEiolTQCGHyvboGa9KVz9TVcnCGc0UVJhr3qAGAN+CRQ8AqohRlcKFmy/f9pdvWz13NyUJyCBlngbjkUnOQOGnv/JtYPvOFV1PLksXDkFioPNW/4XmCvFGnxfkzFnTZ76ysBEKxCBGsDTGpt/5SKKhQjx0xMq1ERpUE0nm7/jcnX/5i9Oz9zD1wTSxSKMYTaLRlEIzQV+cBzY0UDiUBZlBhjlC1te1ilXZK5DBGE2kOSA1BrGooYc1q897k2RbaSpIqo2LyFaWGk00J8CxCgbRXoz0khbbrrztz385PbCdzmnUAV+/L8MzNLfV/22FvXs/wxm6CF6uipdHAEiwUkghSAEjZckxC6GX05362vYJl2osxJq3rAHAt2H9gwHOORe233HLH79tfPtNE1Ko2aCR30/TV2Tzy0omK5b2EP2tnwphWPp2WTai3wUijDQiihY9jeNPXHPem4LNwLJmv28A8G2JICppOXvX7X/2c6N33zyatkuU/T5P/at2XK/ctKV/BTA83L484/sQdOHlkch+0WF9QlylD0qjqB6SDTNP+slk5HinpaNv2v4NAL4dBTBhaWf/TX/5G3br50cyzc0M0qc2DDZyG97/B8u8/9sRF14rbsH61E9yiDNtAKTe/kGCfr47kpz+qtGTX2oGwqEStmqiAcC3dPWbkT6//f+8g1d8st1qz6WFsJvpIJWvfukg8e87FQ2RQFdwOfv5zuAwqIbCVsJgRTlb6XvmuU6ds+78H4rWjtYunTcqmwm+BgDHfslX4jmGqFZqIIsdH/2zfZ9+31QrQSxNY9+uuj+NTijFgErUH6hk+03FTMyqJo+o0qqbLVZjlH0yXGS0mv1mgCnMCGHhWAa2zCSJUYOfk3WrL3qLG9kKVbJuINXShU00ADiGyx+KWC3RCC8yd8Pld/zT306LmkanITXQKhN3Duc7VhPXBr9skD/1N3QbdEJZj5FZ3wRgIP1Q939gbbV29KoCZXkgpJPnv3lsy7MQURHtZIUfXhPHJpp7gPqqKgJUiDDOPnDb//7tmblDmTdYUA8jfE3lXJ5WYSVku0Kr1pZbnIPPDBL/oSxnMDI5rIiuTBTOxwWy3JePpU947apz/4vqKMWU6ItbNRtWA4Bjvv4FpnTKgqEl8a5/+t/u7i9PplBF8BqcQRgNrtYYJCudZYK0ITlzG+oCwaz2dseR5E9bNgeo/7OO0vUgNhJ0f57aia/c/IxfjlxDc0YCkYiAfKeY8zYp0GMpFBYQJSBzmL3+sgOf+ucJrxFBRWPlSm1UIsoRHcjlsd0j9XqGC9qh+pZ8kNonOeALGRAkHOgmtuE1W573a5auE4UIBXCQ2o+YTQXcAODYvwTqEOEEnbnb3v83052dYmm01Cg0lwZpRbpqr+dA4mG45c9lMcPlbs+K26+VQg/LSdFgFlJhaeTSwkhny8vXv+TXMLIFGkkQsS4T4AhYLfTZRAOAR1Tz2rLvdAQDGUjHPddeXt54dZphMJglrKSr6vvZYQys1Iey4apY68GA6vHWx4gNHkkSjFJZY1sRzcPcfDfKuuec+ILfsNGTo0aBqPTdwWzwZjUJUFMDPOL1X4nuVyrjJpXFhEPs7fncB2eWFjpTLVrIEKsVrk6sEmYjQa2H1zk4C6wv9qz9TlBfN6iSzqqkcSv1f9KkRoUYTURhJBQ2mzvd9OxNL/5VjJwU1aVUQM2SB2msNMzn5gQ4Bi2fSm3QlGVkWUgZU3R2XJ/fcM2oS9JCnB6hzzasxoyHVDYZ5jsMaD2D22O1vpJa/QyhZoFWUqCtpaiLGy7Y9OJ3uInzChASiAh1zWBvcwJ8C0peKgCnhImruvTRmMn+G7+Mw7uWRr2CGaNgINA/nLIbV3QzB8Z0yznRwPxuuVqozWCqsQCrMvpAEysT6nwYWZo6/+QX/7qbOK9UUEJqCk0BGsPAyLqJ5gQ4Rv9gi2LBiJIoyQIWTCwUe79y9UgElcZQukr67eu2XHgkwfOIrw5hwoyAeEfplwigmgXXdUCRczbZdNzz35ZOPU1DmbLMLFI9VExMUTTyPs0JcIyDKoCW1CBIIAkMXvP7v7L/rmuPS91oHsu0YMyih3HA/hkwmrms4j90CTasgsWhTiWHNBuMw2PCEONiyGbl+M0v+pXWcc8KJZxTgDAH0JwajUjYtOkaAHwTXZ4V+poDaoLRYEYRcQmQoFfsuGfPbTfN3nVLecMXVh3YrYn1LHaz6DX1DIJIyrC/NR8s97AiBbLlZc8BW2KQCakJDBQaybJ0s1i77gX/bfSU1wQ1+FLhDc4RJkFRCFIXk6bx0wDg6LN7ABbFrO4XUiunLZggmMEiXZKQCIf37v3KF/Zf9W+dW76Cgztd2RtxOpqKAkGcjy2yABWCWr+NENTudNa3TzTQKpl/0gS1r+Ny9QsSJrXSv8ClmueexhGnSwXSXZzecMnPT5z9OlP1jMaW1kYCAJxDa8D+aaIBwNGWM1ol3AYqQbrKRldp6i0RJ+jtvmPvZR/Y8ZlPdh64e7xYmEpi6qApS0qwKAaSzqRu9svyccKVw+8c1n548KHAFa50pAlUJVHExCJhcza29lk/PnPea8roxJkzT4NQq4RnmfHWrP4GAEcfEWY0p6TS0F9LGoPAO4+5g3d9+P07P/we7rh5JInj3rlEA9GlkJLWnX2pLsCGPSyWfRy5rHO7TAyVyimmnw0dIelcM+aUiIUkJpLEUGiUdSevOfv7SqwuGFtQWApWdo5Nxt8A4JuubgGBUKlEIRahiZo479HZffmHbnnX3+HGr67DkqUuIrEiGkQ8UxM4geRgX9BhQOqxfq5zJHunKjDqL9uwqcUQ98eWvQJsMDEAqsHMpcAoDClKQQQyHaKONtEA4JsEAMwgVKCwmGiReq+H9tz413906EPvnioO+jHpIhpUKM4ZaZ7mzAAph2ibHFrKAwmH/j2X8Yjp3joZsmVD7JUE0KqBpKRDUGpgIj624oLFgwnXIxLitE6ZmvXfAOCRNX/6DrqWxLLts9nrr7/+936tc8uX1voyTdjLoZIlDhQ150qxKBCqCIWg9EU+aRxe5FwWbO5nOcumo5WNKfs8zTrl6T+t+orSCZFaTyE5RjMJbm5Xb+7+9viZammE1fMG1iT9j0rl+B3zLzGKmUVzJdq+veOzH7viF97krr9yVaI5tWNOzKcqSWQSmUQ4FSoJT6UoJWhwGiiCANSNH+Oyaklf5VzruZTKttGWdXErNFRVQd0yMgOUpoApHVVE1OhcnMt3XgsEkKICqBjYCP40AHgkEai5xQhlyns//t6v/cpb1u++bzSllJoG8SCo5jS6GCUagyAQERYBzbOxTmumtNhXXLP+uMqK1JxDCrgYmF2vaAL1GXL1swxk9RJHeoEXK4wQseKBa6zYbYQAHgEMTQXQAOCR5kBq0Sdyzyf/4fr/8ZbjFvalQFA1qNFWyjUTFKvEGZx08jI556K13/ODvR4SlAZvlaFvfaXF4X5n9V82XHgsU+KGHzR8QdznAVErOIgwHrwz3/tVOARGQTAWjeBJA4CHl/EvUw7MoFXmk+274iM3v/3XNy10emmcTzu2LB2uAwBwoGJOggiG0bMvXP/yH9TJzUEB583RMIwZ7QvC4esUq1xWBHqw/UX9fepzw6AUtrr7uvd/SaAKQD2aWa8GAN9s4QtV0xiRysJdt179W/997ez+trYQU/Wxn7Vbn6FA0kyqbk7fzytJx9ds8utOGzv/4rmckFi3OGvHaSNhy3AbLoiHGkSDu6u+1+nQsUAz6/8N9d+TSiy3f0W72zwdLDHLmgOgAcDDW/rVbatVwy0iXJq9+vfemjxwb+bZYUgixwsnyw36akfXys9okMZYlQfRAbL+WS8pkykiJ6RmP/DBrnPLM4/94wQkH9Qc5RBBGgN2UFU/GxSePHx3uftaB1TTOa7xuWgAcPRBM6mmBU2DRXFy93v+PnzmsolsNFcJSd5Jc6j025LDZqQrxtery1zr5QqsPvepY8efkReV9LnQhIBAidi3rhi2vCZlMKXe10hcpgMNsxlshVQKAVKdT8rD+eHbgaCozofQLMcGAEd/AEQqAkytROI799x0+7v/9zRFNURxIwXA2PUW64WolD63h/XdLUEhnNFrObd7FwE/sX7ts166VKYUUzGDNxOpuHSikTCaESZ9NxeoYlBka/XLaH1inBpNaVb5C/cZE3W3R51YiEuzqKffCWskahoAHPUBEOjUQaEgE5M7//G93HWPtIPXritzp2lWtlq6zN3vpy/Dd701iUGEC9tvRewq3NrnXsp1W1CW0Vn0iOKCtCJaPibeXL+liRW+XoM8Z2D8gqFvRzyEDgrgEMgYygIY9P+bMrgBwFGHN0pUr9FJ2rv/3vv/46PTqS0tlPM62V29aikpnSH3Xgc0nSF/okFmUg2rp951tt9WHtpBIF1/+vQLvmc+R6JILDhGBVVSkA5KPljmnEc0go7oET24tK0N8CwYAEkBx2bpNwD4pvIghYLgziv+XXfcv1BaftZTL/jTd82c9+QlzdWHNLqBn8qRglV1g98M6pxg/wML91xPQKPb/NI3hOPOCV0kGjPNPQqVGF0wCbU40HB/nxQR8gi+3LIrng19klU7qP+XBHqOzACub6Pd3AQ3ADjqyBmjIySF5fuv+ne/kOPspz/37/8pO/sJu772tVHHAD9WlA764BSonk/sd96FlhadvV+7HFZqsHTy7JN+4C173GSXGRE9AxhtoGL7n6RlGNaKGLobA4bHCCrhxEgpZSSbWAeQ5tCo3jYAeFiRQhkhRHl4/6F7b84nx5/ytnck67fc/b53Z/t2JzKGOD4/UkSx5XY9h9UKq1VqlWaDTzh/47Xx0A5JxUquufiV089/2a4SZZpGgHC0hFWROmwBzxWjkcMOAVw2QBp2i68mDggiqDM/lk1v7N+uwRoANAB4WD831QB055cO7juw/qWvmXnKs4o99x78zAdGEocIc4tqnhCrL8LUYNoX1zeo9ffkSGbOYdf9s/feJKQyRIyc/vpfyU46b74Xo4wA9Cy9RZVK718BNaqy6ilVLaBqiN5AM9Pa+4IGRoDQxEf1mgMhumguInbj1OZ05rRY0fiiGcpmOTYAOPo+KE0qzTUNfuTk578Y4PbP/vvi/Xf7NDUESO7V1aoMw3S2gatLP0ExQCxm5eF9N3wRiPSgln5yyxlv/o2F1vEaekSplhTilwnR/WuBSvZnyATbeMRcGAiqShmcBZHARJHAfDD6NWcx3SBWc0ulOQEaADyMPqhKpBjMpW5m6xlrzj3feov3f+wjozFafz0tX9mCfOjuTX+MhRx1ZXHrl613UJAIYxG6E6dfsuV1v3wg0KEM9JHJcqPniHvfh+r0DH3VzOWlQyGp0TkVRum5idHjnwWMihYlESjNPUADgIcTSgIRcaQ91tp4iptZc+DLV+bXXTOZSFA1mtQCoLayLXPk2JeQRpbwQmDPtqW92wko6Bxi1E3P/+HxZ/+Xg92QSCcxtQGUDBwqaodvBZYF4+ruphHmlTAnhsRKbx3Tbpw+ub35qRECqNWKFs1qbADwcH5wTziYjEyE6XWhLHZf+ZmR7pwQRidGIioMw46lg82Zyw6mNZogImlYOjR/1w0CBHMOIlIas1Nf/2vl1qfn3WASH2KHH2IKPegWYFlglJqIemfqtUdn8+paJzzbtTeoAXQCFTRNoAYAD6sGkFhNsJtvnXrJcxnywzd9NXEayUjvQDGF62//RxQCwz1HUhA9giChdsu7rgcKoURNgASx9OPrT3392/aPnRRjxPAAzHJrZ8XFMCuS0EqKaBSn4gk6+q6O9kZOmNj6fABmanDe6GFgUwQ3AHgYRTCUUDiApzzjqWHxUHn/vUgYAEFUqkHAWqe/Qkq/Wq1uwWwIAhBoBFpA/sCtiIcoVApM6FRDPnX6xetf8MaDZSqCPrXfCB1I/lt/PMH6U5RWtYP6H4BRkJMSJMtLbW++OFtzvgGuUlo3GZ4/aKIBwFH83OaqXhCNZraw534cOizOE5JYGZwqvShh1TKtTE2NMKP2F6WZgDVBmqVYGz4/tKs3e0BATyODUYIfUbUtl74+nvasxcI8IgAVEpFQSLXQa/9Tq7SgqYpKUs7qYhzqEETRMyt8a+q050MmaKkTJ6wU4MjGr60BwMNpA9UngdFIHt6xI5Q55UhDrmVKPpal+wcFQF0UV34BBvGSzx9e2run3x01miksR8rRLVtf/hOz6RrEnqMa3bD313I3aXCoDGVESheZRiSghcKKjc9ob3nKg/SGmmgA8PB/dKkqWKCzYwe15ApRnhWWpcP174q1OsjlQQp8vlTu3gEgGowCMoGBkkdOnfncySe/eLFUodoQy3QYWw9yhWT/RzUxA7REa+bMl5vfZE3TpwHAI64CKs0GAyzs3iPQSttnuFHDAfF5pUMdhiQdqryIEBXNrFfu24Xa0sjB4Cy2EVIJYLrp4tcsjh0fDA6qktQ22Fy2PLUqpa8JP4aacm3eSg9bimZrz5484RmhyfcbADzC0Frs3CACzcPevV6WuZcrDBqX05G+p+PAqa7+OlRgItFBtAwH9wGFUAkYHKyy6TW1cvTEJyVnXLpYmEcomBEiNFCOdItczoKqHyeCANwsx7NzXiatDaJo8p8GAI+4BLC6yxkXF5f27fUOw4PnQ6SHFc+TKuEfpEVWFRIwmlKFsPlD0NxRYVEhRg+mgakaIROrn/SCKC1qjHTkQ0iZGCstIBmMf5GIkG7UuPa0iSe8ENEBps0Z0ADgEQFAxSREAJDywMFwcCc9UNvoGmBmahYVqlR11WiiGaNoArjoNVKdiVgEophAchijT4rF3Vr0gIyg66f1DnB0Ck6ffLpfdWqhTFzXCCUMMSJWo49GU58bnNOWY2mioIOZZ1gINnnO9/n0dCDAaVMBNAA4BkVAlXf0lpZiXng6DIlTYaW4+aAqKNNcfZ5FTVUCpZv63NdTugSEkncWylDgiKoBMKiquvFN7vjTY6neiriizqg5Ei5mYlTXCa4I9AVGI1pLPa+bnrbm1OepEcgA1+z/DQAe2eoniNo1t9VqJS6FGoZ8vIZIcMNq/xIlgMGrB11R0eYUUkv5m6Mhlix7D/UdjcEgU7ZpiyO9xSgOlAHzv/oOXhPSou8qnagXDdA4h+mpJ7+R2QmMFfehMQJoAPCIAQCzaqjLjY66rFVLv2HlGFa/EAZqf2sfncSsoC+8UfKRMh+PogbAVTbv1ID6BDjywDEaQDc61i+gZWVjqX6+ukLhXRzLAlqYz8OSP/HCiVOeW6onVIlarquJBgCPJP+p/lCAI22OtKMdWfVy4G40NKuVqKOlhXNAzDREdfORkd7oQBFxK1UXh18poQhQYOFAdBZFHEJtqEEM2kwmQammLYmpsAhic8mm1Rd+v7lVMIWURq3A1Cy+BgDHoBiOgGQ+GR2Jg3x8eDRx+Pd6VkXNlZBiJJZZYUuTa5InPbWMpkYTV6kiQh7iZZFKDygelF33qXdBJNGwfAdmwy+pAwAWRVLsCqOtM36gveV5FuGFJtU4TWMC3wDgkf7cJLwJnJn4dpyekaDOotKUTFVbsDKRKH3WGyvShJbexKwVWToT54qluO4535Nd+Lxe2fUWvbqYkJL0DxnrqzAaNIKMh/bIrlu99xFZ7QRZSxsaxADzWjWafOnKPJQysXXdRT8ITDlWha9jY4DXAOAY7PwGgxiNIcK3/ao10WD0BlGyNFWLsLh8BdyX9o8O3sSb63pqwnRpfnb3wU2v+LFeNmqAqMTMI01wRBkBGOGIhTuutcP3J0KvVr94NtA/BIngA1wXEmhxoVi15sKf8FNPqC/sSFYAaErgBgDHAAGEVWwEYmR6JvcSJHPw0WxuYmJuZpUrzduQTDNB0JuCGoVEGsHMh0N33TR68pOzky9YKhlYZuMTLs36otCo93YjKNbbNfu1j6QMMCRaiNZCDwPpByOiJArJYq/bMXvCq8bPeW2M1lz7NgA45qH9QpIAZGzCHL2F1GIs8vS0c0750Z9f4uiRE8GEs0q1UwCv4lIX9MA2eFl97oXBYrCyPble0ilorHb1aIiAmpKcv/MqfeArLk0UBBjFW38cXivrbMAFz9DudWVu9TM2PPfn4AwsmoynAcCx7gJViXd/f09abUH0ljuWFmxkw6nrXvwD3Lw1L8pl4baaA+eUBIJXKAQO0p0rOwcmt54mSRZEkpmTgMzUljWfzYSG8vD+az/e0sUSNFgUX9Kjch+QfpkBRDGNS/tGt258+duzyTNRJq5Z/Q0AvjU/OVG5UAN0MEiQtOfFEe1sNcePy7ZsjjEeYWBk9JHOIWYaFQw+ZWmx2/Vrtlo23ZG0telkoPKblLqnoyXJ7v1f07uuSBNHQWYdowliNfICwIRGAa0IcU+yacMrfmVs80VWKJCZpc06awBwzGsA7bc8IwBEFSLSR0kJJlkKYzaWVpJVtXL/0IS8EaQKAdJMtIdsdLO1p6w1PXrcKYApBNBKET0aDHrolqtGlvY5o4/qGcggMILOapsAH0tVPazr1l361smtr7CgFFNX5q4h/jQAONYZEBBooKmxByCWIQ2aWserBKY2DhAuqhCGYIiGSryf3orEYqAv6QTBx6ACFbpWGxlGJjePbjwBFmkCK2EBhuhThEO9+74mkkCjj0nONhio3qr7ATCKjYRisedbz/ix6fNeHUOmksIDwiYFeizH43QOtRq2rUjPHkAxN6tkdE59p/BstVYBKBcWag/rgbkLYZCawFMLGyorY6/EnPrW5hOlPa2RRhhSBRwsBbFwAJ2D0RfdLHh1Hi7VGJ0GH8TMxMzJQR2R45+x+amvUhuNQqEBpTM4NtdezQlw7E+A2u+FTADFoYOBDpZkMRRZ0j7uFOQL+aH94lZYfBEgHWoZQgNMaXTO+wTo5sFnJ58DjESrPLAtkkaDRYVFjU4DGApRZ+KV0alSCHE0iXHBr558yqvROj6aVxLV9H09UtNEA4BjegIAVCBWJLZ8MezfSwdv4paQbDxh4vwnLR14oDy0P3HejnxifXUlUMDUyKyVtsfyhbluNj555oVanRksiEJhCgugTB4na0+LedoK3vcHKoOYjy0fWqKShMCxta3jzwXEExmDQCPSyKSpABoAfCsQQEJhRjLMH8r3bE+TaKKHVKafcnE6tXru7hswe8D7BEPqiGClxWx971RRI9tjMjbd2b23t2r1+Ilnl0CloVL1lgQaDUEmNlz82rn2cSxTMYvOADqrbhVo9BqCn1qXjG02KBGpKhBDU/82APiWHQGwAIsAlvbtjrMHM2+5lodmVp/wwpcDmLvp+jQU9XTwYEq3Tp+UoqxGepXp1Az82Oy9D6w75xy01lioxII8kDkjY3RqQW301AvGnvycxdKZsHQgmSko3eDK0jOK+Mm18NOluUgHJDAngIOysX9sAHDMIwICV0lCHL7xJptdYJosdbpTFzxjzXkXa/fA4TuuyyC1BhZqn/eK0A8azcEYfGEmoxtPg3V3hfTEi14FxESU9PVFAAmXOpEUAGbWn/XMMkki0yxqcL2SniZGdQZF1hqbAM2j7zBMuLpR21B/mi7QsQ5nERVBXxcOfulyShkCO2PTT3vND8O15+/58tLtt05mqSJWvf6BS7ARUWCOqQlNc0ncppMAOf+5L2yNTMBUxAEyNA3pSFAVEC1iyjIx0iSSglhZzovC4Og8HsJau/E+ak6Ab0Eo1aJ5cGHbzftu/Pxom525uPblr1311OcDOPjFK8YPH6TUuhHD+lhVVzQ4EzIrpBibHj35VDBttccrhbi6WfpQEco8sbKtvSBemSVW1AdLdSWWZEBiDdWzAcC3IQpYNBB44OMf9Qd2hQK65QnnvPmnzWXl4T17P/OJVmKx8iyyWgVoUAt7g1dNDNJjsvaEsc2nKhglBb3RmaHyOBr+dlUnU9N2Du/MogPoPJSVwCirkvo/wU4TDQCOaSQKSWRp5+17PvHRVZbu5Nipv/Df25tOJ+zej7833HcrMh/kSCOXKjnxhkw1Eh2VkRNPcyMb1FDx9f+TphOAbMMJi6PH9dSTQQxKMdZXCo5qIQdUmnynAcC3JQcSod39D3+Pnfft1nDyG35ky4u+z8x37rxl9/v/bsznME+rvU05cIYESmFFiu4mXGj7qSecBXgxc9WXrdrI5UGG1zSz9vqtbst5C8F7FN7KUrxWRAdRoVosgALWTLs3ADjmLR8rYJXslRlCiLnzfv9Vn9n/wfd3yl77klee91O/lBtZdG985x+P7Lkvc8Ko3pQMYiLmDVAXowBUUJQStQjT61edfm7tbPcNa1WL4NTac1/Y8yNiEUgMBJVmMKaIYekw1BrFkwYAx3qvB0vSYCU1Qi0vxaW93ffc9Ee/2T24o/XMFz7j7X8cWxMZ7fb3/+2BKz883nZa0qBAJKEVURkgEEkxGJw6WB7SLU9qbThLLQ47vx9pADyUBkVNp057Ttx0Wjc4cy2KCiLNFC5BCIs7LPRM2Nh9NQA4lkETaJJTS4khmCRtnd//5d/6pX1f/uL0C1/8nN/5G7dmnXM49OmP3/Ou390gucUiOKgImARmeRJLn3uVNLQSdcqsFHgrFziy9qnPh58uj5KrQ29mHFs385RXz2ISuqT0ZolU8zEeId9X5tuI2JB/GgAcUwDAEg1ZZGo+S70duueLb/mR+z/+0S1v+omL/vD/uJlNgnTh1uu+9qdv3bB0sB2LQJZCk9qvqBXLForgrXT0CM4ULoZQuvUnrX3SM00BiB3Vj1FZOrrV575c1p9VhsKZVQ4xhKhr2dJceWg7IM0J0ADgWIbRSkaKeMa9n/rHD37vK3fedMszf/8vnvpbfyKtdaArd9127Tve0tp7XyJZob5gYoQgkqVDmWgSQrpILKaFSZlq6RAPRr/6ohemq0+wsuy7aX/DnwMiaoiudfya818yjxFRrYYNYKJsZd1c9z7QLKnHVzwOboLVaC6b377tit/9Xwev/dKJL7rkvP/6Y+Mbz+yWZQvQQ3u/+ls/l9x6TWtktIhGOjGjlRCJcM5hV56Obz1j3br2nuuuQJKYIJTorjt90/PfAEvhc6klRo/iJIIJIsxPnvOCfdd9tNzzFZcYIQKLghGdy3deO65LkLG+dG8TzQlwDFIgJLG860tXTpx5+ms/8OFnvf3PxjeeGco8swTl7Jd+7+eXrrlqNB3TsgQKQUwtpmpOYeLnFvPFTVtP/6m39mS0XZoxC97PdXXLpd/f3nxWVDUnR2nXYkAAFTSDGz9l4uxLe5rQvEFIM+tlvhsO3hSWdtePXn5eE80J8MgQEMknvfoNcDTEEEsXvUgq0vnKH/xm97IPr2mzaxHiPYOAvURSeinLvd2l1vmXPOdXfhs9O3jjTataVjpb7JY85xknvvSNZhAhLIlHWQMbPJDTJwZnbubMZ++++j3t4j7LUpFAhk465mf3x51f8KefYhrhIi0D9SFuFZpoToCHs/7pxBvZi0HVPHxwEJ/f/Pe/ve+f37nBi+UYCXnbiggr07J0xYFOee/oxjU//tYL/vD/jp7wxAc++O6xhYOSOM17i5OnnvEjvxlHN+SVPyqCHLVQc3VXIESMsbXqhPbxTyxCBKhKgSfFWW9p29XQhUKqSQBrqEENAB4xAAw0KOGcJ72qJo73f+Sf7v/L/32iua5xybcK56PAwS8thP3dZOTilz37j//xnDf9f8no5oNXfWb/l/8lGy/L3O1Ipp7w0785cfrFeaxMjKy2+z3K5Q+ktRC6gWuyk54aXFbVKKLeafRJXm6/Js7eFklTghrRXAs0KdAjjghTWlJKhErC2a994eY/+r11MXSd6/o8lShRFnq2aJh44nMv+KEfWXfJixXjGlAeumvbP7xjdW+ujOGgnHTOz/7Wxqe/JAb1ifNQwIxO4Y6mCrZBJUwVQYRvbTx7KR1XW0xExKhGupgublvcdvnozJNpphYiXeN/3QDgkeZA/faLipd44L6v/s5vTh64FxmXxBJRzfVA7t3p55z2xh865cXfi2xdKCN8F2H/HX/xq+m2G+dCa/H4LU/8md9Ze8FLrOy5RIkq83dHeQmAflvHQCNJBZBObUA2pfkSXEQ1A2mWMczd89mJs19Ff3ykyeDsaKIBwDcXCtDozApvKeKNf/LnesNVo63WkvQ8w+JhN7fxjNPf8MbTX/Eav+qkoGbdmLRp8ztu/MN3zH72w5pNjjz7xU//iV8dWX96XnS9b1V/K0GYkOagOKpOqBGq5koyMRMDs1Y2OhPyXQkLLzR4NXifxIO3Lt1z1dgTTjYUAm3YQQ0AHlmZYjDTaPQu2flv/7rjI+/ZlPqOg+8ms6Ubf9GrLvzZX504+azStCwjEp+00b3l6uv+7O2Hr78ye/IzT/2eHzr+OS+3ZCaEmPpUa46062/ND3JS/U+KEYooPGI1AwaXyciEHQzeVJFEFx0oKMd03/wdl4+e8iL4cYmwZiiyAcAjC4s0E5csLt353v87Wh7M22OdInTbk2f/0ltPfOOb4EZCXiZZgmJ+/41fuO9zH7vv8ism1206+22/t+kZL3VT62NAqeq8o6l7iC35qJYnq0caHCszYEC9OSeMTi04H1l6UMER+s7uLy7c9+mJra+JFoWGo7xra6IBwEOuPVV6J/N33ty5/cZVqSwW5eLUpqf9r99dc/Fr8oC0o86HWz73yTs/8qHx/fvGTlh94dvetvH85/hkY9CQh0BxTtQhPuLGl0FoEIUnQAsSe0YoHAGpXPisDZUpeaBzwz/p5qdbtpGmDQAaADyyVRcgDnv23NfrHKS3Lkcu/M3fW3fxq3tlSM2HNi3E9tTYhT/ygxs3nY7pjahmB0oN3tOJQxRTwGntavrNleLLPvRq4gkL3dibSwSQBLXSFgVWSCFJ6fd/uXfbx9vn/VhhSSMP3QDgkRQBiN484F2W0s8t2frXvnLj818VVBNvRGk0l2Qnnffc/upUMyMVHlmlng6Bwegi8E3rdBpgMDBqbU+DsLA7LB7MhAohTBANnsxjUuRuvKXd7q3vz064RKbPNDM2LjGP0cX1OOgC1dep67eewbHVIR3b8pJXG+jUqikZDzpNNESNRW6mpDdxMZJFX0XUGR0AZ/ERTq0bzFBRrdGb2yehY1CjCIQw0EqnTpkER0/p3Dx38z94O8SmE9oA4JuvAKCZqQUbOfGk6UsuWcTI9NqNBQxQr6kgoyUA4J1ImqEiQzO4VolRZaKU2kqAKixZVwLfzOI31Js9DKAWs7sQOySNTispIVrpxGvSjiUAn4R828fK7Z8B1SwGg0GhD9KcaKIBwDdIvkkTmrhzf+4tdsJZc/t2pSDEw6EWoxJUU499ESB4IqkuupbJaAK0vumsj6gcMcRDlQKUxYEdGqMTg8VotMq2PkqkBh+hpLXHysOdr/2NdW5V09JgGhDLaM3kfAOAh5F1MJBUWBlH12+94Od+8uab7+TRIeeYhgPEGawKpOm6M2Z1fbdwqXUTyYNLlKkMvjEVFuitmLv90E3vcpjPTAVJSKJAG9Xcx0i4t7/97Y99CETAmYgyl3LmxC1l8NMbNoj/NvcWSSPMKGpwphxdv8GPTOzbcW9aHkoSzb335j0NYhSAZs4gSCT25u6TsfF05rwAF+i8DWn2NvHo5hdmj/m9yCzCIiWNCKKkOniYPQoLyABVc9HMw2gsHWPnvo8d+PhvTRX3hbZvKTxi6UFnRrXKi4MZhL3R4yYv/iuZfjrUAKOwqYybFOhoUepAgYbKAkN9YVEflcVjAFHCGygGhevF1sgJLxo/+8VlmfhKuqhyXiKMAooogChgtnDv7M1/LmGnVKZ7zepvAHC0q44wwFc2RRWPh/ooaXCqgQE0GKz0CN5Caa3W9MlE4qDBuSBCASi1ORK9AyKCT1Lb9YX5be+CC1ShxWbxNQA42i4QSIhzlKrh4+AfnfyBQmEGOBLOkY6Ep1OWZRqSMlX4pSxGk3aReNMyKYJXs1Z0VjJMlNq7633l/BcrAz0gDrVDrWmNNgD4BhgYYjE8SqL7fR4pUfkoiYoQLGBzRSgXc1uY1flO6Ha7yAsKNfMaPZYcSkEhTn1n5+E7/pW2F2xW/GMimnGlRwSHilsqM2fmx794f68XZAnOh9DReN+ULkwVkIS9VAUGSifR1KHYdXnvxGtbq19U6bY30XSBHr9hiEGZmPQYZxFFJZgKtBPnr937mT9cPXeDb/tOkrY1Lz3zxI/HEFB0T/rJ1U9+B9Du681heeKyieYEeDydAfQgFJl36+goUENptiZZuznbctee67bPFItWWNelRbQY2YmZUou921AuIBkDmhvhRzn+f2A2ZFJx/zF/AAAAAElFTkSuQmCC" alt="Stallion King Logistics">
+      </div>
+      <div>
+        <div class="brand-name" id="brandName">Loading…</div>
+        <div class="brand-tagline" id="brandTagline"></div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="clock" id="clock"></div>
+      <div id="accountArea"></div>
+    </div>
+  </div>
+  <div class="nav-bar-row">
+    <div class="nav" id="roleNav"></div>
+  </div>
+</div>
+
+<div class="wrap" id="main"></div>
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<!--
+  Real backend: Supabase (Postgres + Auth + Realtime + Edge Functions).
+  See ../README.md for how to create the project, run the migration, set
+  the RESEND_API_KEY/TERMII_API_KEY secrets, and deploy the functions.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-adapter.js"></script>
+<script src="config.js"></script>
+
+<script>
+/* ============================== Backend configuration ==============================
+   Fill these in after creating your Supabase project (Project Settings →
+   API). The anon key is safe to expose in the browser by design — it's
+   what Row Level Security exists to constrain. Never put the service role
+   key here or anywhere in this file. */
+const SUPABASE_URL = window.TRACKER_CONFIG?.supabaseUrl || '';
+const SUPABASE_ANON_KEY = window.TRACKER_CONFIG?.supabaseAnonKey || '';
+const FUNCTIONS_BASE = SUPABASE_URL.replace(/\/$/, '') + '/functions/v1';
+function backendConfigured(){
+  return /^https?:\/\//.test(SUPABASE_URL) && !!SUPABASE_ANON_KEY;
+}
+// Calls a Supabase Edge Function, attaching the signed-in staff member's
+// session token so the function can authorize the request server-side
+// (see supabase/functions/*/index.ts). Used for anything that must run
+// with the service role key — booking (real email/SMS), and staff-login
+// management — never done directly from the browser.
+async function callFunction(name, body){
+  let accessToken = '';
+  if(db){
+    const { data:{ session } } = await db._client.auth.getSession();
+    accessToken = session ? session.access_token : '';
+  }
+  const res = await fetch(`${FUNCTIONS_BASE}/${name}`, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify(body||{}),
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+/* ============================== Data / constants ============================== */
+const STATUS_FLOW = ['booked','received','packaged','scanned','out_for_delivery','delivered'];
+const STATUS_META = {
+  booked:            { label:'Order Booked',         short:'Booked',      tone:'neutral' },
+  received:          { label:'Received In-Store',    short:'Received',    tone:'blue' },
+  packaged:          { label:'Packaged',              short:'Packaged',    tone:'blue' },
+  scanned:           { label:'Scanned / In Transit',  short:'In Transit',  tone:'amber' },
+  out_for_delivery:  { label:'Out for Delivery',      short:'Out for Delivery', tone:'amber' },
+  delivered:         { label:'Delivered',             short:'Delivered',   tone:'green' },
+  exception:         { label:'Delivery Exception',    short:'Exception',   tone:'red' },
+};
+// The customer-facing Track view collapses the six granular operational
+// statuses above into three plain-language phases, so a customer sees "what's
+// happening" rather than internal warehouse steps. Staff-side views (Admin,
+// Warehouse, Dispatch) keep using the full STATUS_FLOW/STATUS_META detail.
+const TRACK_PHASES = ['Package Received', 'Assigned To Driver', 'Delivered'];
+function trackPhaseIndex(status){
+  if(status==='delivered' || status==='exception') return 2;
+  if(status==='out_for_delivery') return 1;
+  return 0; // booked, received, packaged, scanned
+}
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+const EXCEPTION_REASONS = [
+  "Recipient's phone cannot be reached",
+  "Recipient not available at the address",
+  "Address not found / incomplete address",
+  "Recipient refused delivery",
+  "Parcel damaged in transit",
+  "Security concern at delivery location",
+  "Other (specify below)",
+];
+const WEIGHT_BANDS = [
+  { value:'0.5', label:'Under 1kg' },
+  { value:'2',   label:'1kg – 3kg' },
+  { value:'4',   label:'3kg – 5kg' },
+  { value:'7.5', label:'5kg – 10kg' },
+  { value:'15',  label:'10kg – 20kg' },
+  { value:'25',  label:'Above 20kg' },
+];
+// Built-in street address suggestions for the delivery-address autocomplete.
+// The published tool can't call an external maps/geocoding API (no outbound
+// fetch), so this is a curated list of real streets and districts across the
+// cities already used in this demo — enough to demonstrate "type and pick"
+// address entry without wiring up a live provider.
+const ADDRESS_SUGGESTIONS = [
+  '1 Adeola Odeku Street, Victoria Island, Lagos',
+  '8 Ozumba Mbadiwe Avenue, Victoria Island, Lagos',
+  '14 Awolowo Road, Ikoyi, Lagos',
+  '22 Allen Avenue, Ikeja, Lagos',
+  '43 Kudirat Abiola Way, Oregun, Ikeja, Lagos',
+  '5 Admiralty Way, Lekki Phase 1, Lagos',
+  '10 Broad Street, Lagos Island, Lagos',
+  '16 Bode Thomas Street, Surulere, Lagos',
+  '30 Opebi Road, Ikeja, Lagos',
+  '19 Marina, Lagos Island, Lagos',
+  '5 Aminu Kano Crescent, Wuse II, Abuja',
+  '12 Ademola Adetokunbo Crescent, Wuse II, Abuja',
+  '3 Gimbiya Street, Area 11, Abuja',
+  '9 Adetokunbo Ademola Street, Garki, Abuja',
+  '7 Yakubu Gowon Crescent, Asokoro, Abuja',
+  '14 Aminu Kano Crescent, Wuse II, Abuja',
+  '21 Ahmadu Bello Way, Garki, Abuja',
+  '22 Zoo Road, Kano',
+  '14 Ibrahim Taiwo Road, Kano',
+  '8 Bompai Road, Kano',
+  '3 Airport Road, Kano',
+  '10 Zaria Road, Kano',
+  '18 Murtala Mohammed Way, Sabon Gari, Kano',
+  '22 Aba Road, GRA Phase 2, Port Harcourt',
+  '9 Trans Amadi Industrial Layout, Port Harcourt',
+  '14 Woji Road, GRA Phase 3, Port Harcourt',
+  '5 Olu Obasanjo Road, Port Harcourt',
+  '10 Ring Road, Ibadan',
+  '5 Ondo Road, Ibadan',
+  '18 Bodija Estate, Ibadan',
+  '9 Ademola Adetokunbo Street, Bodija, Ibadan',
+  '8 Ahmadu Bello Way, Kaduna',
+  '12 Constitution Road, Kaduna',
+  '6 Kachia Road, Kaduna',
+  '12 Zik Avenue, Independence Layout, Enugu',
+  '22 Abakaliki Road, Enugu',
+  '8 Chime Avenue, New Haven, Enugu',
+];
+const LANDMARK_SUGGESTIONS = [
+  'Lekki Toll Gate, Lagos',
+  'National Theatre, Iganmu, Lagos',
+  'Murtala Muhammed International Airport, Lagos',
+  'Silverbird Galleria, Victoria Island, Lagos',
+  'Computer Village, Ikeja, Lagos',
+  'Ikeja City Mall, Lagos',
+  'Third Mainland Bridge, Lagos',
+  'Silverbird Galleria, Wuse, Abuja',
+  'Nnamdi Azikiwe International Airport, Abuja',
+  'Jabi Lake Mall, Abuja',
+  'Ceddi Plaza, Abuja',
+  'National Mosque, Abuja',
+  'Kano Central Mosque, Kano',
+  'Kurmi Market, Kano',
+  'Bayero University, Kano',
+  'Genesis Cinema, GRA, Port Harcourt',
+  'Port Harcourt Mall, Port Harcourt',
+  'Isaac Boro Park, Port Harcourt',
+  'Cocoa House, Ibadan',
+  'University of Ibadan, Ibadan',
+  'Agodi Gardens, Ibadan',
+  'Kaduna Central Market, Kaduna',
+  'Murtala Square, Kaduna',
+  'Polo Park Mall, Enugu',
+  'Okpara Square, Enugu',
+  'Nike Lake Resort, Enugu',
+];
+
+let db = null;
+let state = {
+  settings: { name:'STALLIONKING TRACKER', tagline:'Parcel tracking, from hub to doorstep', prefix:'STK' },
+  riders: [],
+  clients: [],
+  parcels: [],
+  admins: [],
+  deletionRequests: [],
+  notifications: [],
+  activityLog: [],
+  ready: false,
+};
+let currentRole = 'track';
+let selectedParcel = null; // tracking number currently shown in Track view
+// Public (not-signed-in) tracking lookups go through the track edge
+// function instead of the staff-only realtime parcels listener — see
+// RLS in supabase/migrations/0001_init.sql. This holds the last lookup's
+// result; a logged-in staff member never uses this (their Track view still
+// reads instantly from the already-subscribed state.parcels, same as before).
+let trackLookup = { tn:null, loading:false, parcel:null, notFound:false, error:false };
+let adminDetail = null; // tracking number currently open in the Admin detail modal
+let adminFilter = { q:'', status:'' };
+let exceptionTarget = null; // tracking number currently open in the Report Issue modal
+let deleteRequestTarget = null; // tracking number currently open in the Request Deletion modal
+let bookingConfirm = null; // { tn, notifications } — shown right after a parcel is booked, previewing the curated tracking-ID email/SMS just "sent"
+let activityFilter = { q:'', actorId:'' }; // Activity Log filters (superadmin-only view)
+let notifPanelOpen = false; // notifications dropdown, top right
+let profilePanelOpen = false; // profile dropdown, top right
+
+/* ---------- Staff login / onboarding ---------- */
+// Sections that need a logged-in admin profile before they'll render.
+// "Track a Parcel" stays public so customers never need staff credentials.
+const STAFF_ROLES = ['warehouse','clients','dispatch','admin','admins','activity'];
+const NAV_ITEMS = [
+  { role:'track',     label:'Track a Parcel' },
+  { role:'warehouse', label:'Warehouse' },
+  { role:'clients',   label:'Clients' },
+  { role:'dispatch',  label:'Dispatch' },
+  { role:'admin',     label:'Admin' },
+];
+let currentUser = null; // { id, name, staffId, role } once an admin has logged in
+let loginError = '';
+let sessionRestoreTried = false; // tries once to resume a session from this browser after admins load
+let adminUserModal = null; // id of the admin profile open in the edit modal (Admin Users panel), or 'new'
+// The platform's three staff roles. Staff and Admin can both work the
+// Warehouse/Clients/Dispatch/Admin sections; Admin and Superadmin can approve
+// or decline a parcel-deletion request; only Superadmin manages logins.
+function roleLabel(role){
+  if(role==='superadmin') return 'Superadmin';
+  if(role==='admin') return 'Admin';
+  return 'Staff';
+}
+function canApproveDeletions(user){
+  return !!user && (user.role==='admin' || user.role==='superadmin');
+}
+function parseRoleField(v){
+  if(v==='superadmin') return 'superadmin';
+  if(v==='admin') return 'admin';
+  return 'staff';
+}
+// In-progress "book new parcel" form values, kept outside the DOM so a live
+// data update elsewhere (e.g. another staff member's action) never wipes
+// what this user is mid-typing when the view re-renders.
+let bookingRequestId = crypto.randomUUID();
+let bookDraft = {
+  client_id:'', s_name:'', s_phone:'', s_email:'', s_city:'',
+  r_name:'', r_phone:'', r_email:'', r_address:'', r_city:'', r_landmark:'',
+  desc:'', weight:'', service:'Standard',
+};
+function resetBookDraft(){
+  bookingRequestId = crypto.randomUUID();
+  bookDraft = { client_id:'', s_name:'', s_phone:'', s_email:'', s_city:'', r_name:'', r_phone:'', r_email:'', r_address:'', r_city:'', r_landmark:'', desc:'', weight:'', service:'Standard' };
+}
+
+/* ============================== Utilities ============================== */
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function genCode(len){
+  let out = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for(let i=0;i<len;i++) out += CODE_CHARS[arr[i] % CODE_CHARS.length];
+  return out;
+}
+function fmtWhen(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('en-NG', { timeZone:'Africa/Lagos', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) + ' WAT';
+}
+function lagosDateKey(d){
+  return new Date(d).toLocaleDateString('en-CA', { timeZone:'Africa/Lagos' });
+}
+function fmtClock(){
+  const d = new Date();
+  return d.toLocaleString('en-NG', { timeZone:'Africa/Lagos', weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) + ' WAT';
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function pill(statusKey){
+  const m = STATUS_META[statusKey] || STATUS_META.booked;
+  return `<span class="pill tone-${m.tone}"><span class="pill-dot"></span>${esc(m.label)}</span>`;
+}
+function findParcel(tn){
+  return state.parcels.find(p => p.trackingNumber === tn);
+}
+function findAdminById(id){
+  return state.admins.find(a => a.id === id);
+}
+function activeSuperadminCount(excludeId){
+  return state.admins.filter(a => a.role==='superadmin' && a.active!==false && a.id!==excludeId).length;
+}
+// After the admins list first loads, try to silently resume whichever staff
+// profile this browser last logged in as (a light per-viewer convenience —
+// nothing sensitive like a password is kept, just the profile id).
+function tryRestoreSession(){
+  if(sessionRestoreTried || currentUser) return;
+  sessionRestoreTried = true;
+  try{
+    const savedId = localStorage.getItem('stk_admin_session');
+    if(!savedId) return;
+    const found = findAdminById(savedId);
+    if(found && found.active!==false){
+      currentUser = { id:found.id, name:found.name, staffId:found.staffId, role:found.role };
+    } else {
+      localStorage.removeItem('stk_admin_session');
+    }
+  }catch(e){ /* storage unavailable — just skip session resume */ }
+}
+// Real-backend equivalent of tryRestoreSession(): Supabase Auth persists
+// its own session (in this browser's localStorage, managed by
+// supabase-js), so on reload we just ask it who's signed in and resolve
+// their staff profile — no separate stk_admin_session flag needed.
+async function restoreSupabaseSession(){
+  if(sessionRestoreTried || currentUser) return;
+  sessionRestoreTried = true;
+  try{
+    const { data:{ session } } = await db._client.auth.getSession();
+    if(!session) return;
+    const { data:profile } = await db._client.from('profiles').select('admin_doc_id').eq('user_id', session.user.id).maybeSingle();
+    if(!profile) return;
+    const { data:row } = await db._client.from('admins').select('id, data').eq('id', profile.admin_doc_id).maybeSingle();
+    if(!row || row.data.active===false) return;
+    currentUser = { id:row.id, name:row.data.name, staffId:row.data.staffId, role:row.data.role };
+    render();
+  }catch(e){ /* session expired / not signed in — the login screen will show */ }
+}
+function logout(){
+  const actor = currentUser;
+  currentUser = null;
+  loginError = '';
+  notifPanelOpen = false;
+  profilePanelOpen = false;
+  try{ localStorage.removeItem('stk_admin_session'); }catch(e){}
+  if(db){ clearStaffData(); db._client.auth.signOut().catch(()=>{}); }
+  currentRole = 'track';
+  render();
+  toast('Logged out');
+  if(actor && !db) logActivity('logout', { actor, summary:`${actor.name} logged out` });
+}
+
+/* ---------- Movement markers: simple tick / failed / re-booked / pending icons ---------- */
+const MARKER_ICON = {
+  done: '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.3l4 4L16 6"/></svg>',
+  failed: '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>',
+  rebooked: '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 0 1 10.6-3.8M16 10a6 6 0 0 1-10.6 3.8"/><path d="M14.6 3v3.4H11M5.4 17v-3.4H9"/></svg>',
+  current: '<svg viewBox="0 0 20 20" width="10" height="10" fill="currentColor"><circle cx="10" cy="10" r="5"/></svg>',
+  pending: '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6.3"/><path d="M10 7v3.3l2.2 2.2"/></svg>',
+};
+
+/* ---------- Copy-to-clipboard for tracking numbers, everywhere they appear ---------- */
+const COPY_ICON = '<svg viewBox="0 0 20 20" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.6"/><path d="M4.4 13H3.8A1.8 1.8 0 0 1 2 11.2V3.8A1.8 1.8 0 0 1 3.8 2h7.4A1.8 1.8 0 0 1 13 3.8v.6"/></svg>';
+
+/* ---------- Show/hide toggle for password fields ---------- */
+const EYE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.6 20.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a20.6 20.6 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+// Wraps a password <input> with a small eye-icon button that toggles it
+// between masked and plain text, so staff can check what they typed before
+// submitting. Delegated in bindView() via [data-toggle-pw] — see below.
+function pwFieldHtml(inputHtml){
+  return `<div class="pw-wrap">${inputHtml}<button type="button" class="pw-toggle" data-toggle-pw aria-label="Show password" title="Show password">${EYE_ICON}</button></div>`;
+}
+// Wraps a tracking number in a small clickable control (text + copy icon)
+// that copies it to the clipboard on click — used at every point in the app
+// where a tracking number is displayed, so staff and customers never have to
+// select/retype it by hand.
+function tnHtml(tn, opts){
+  opts = opts || {};
+  const style = opts.style ? ` style="${esc(opts.style)}"` : '';
+  return `<span class="tn-copy" data-copy-tn="${esc(tn)}" role="button" tabindex="0" title="Click to copy tracking number"><span class="tn"${style}>${esc(tn)}</span>${COPY_ICON}</span>`;
+}
+async function copyTrackingNumber(tn){
+  if(!tn) return;
+  try{
+    await navigator.clipboard.writeText(tn);
+    toast(`Copied ${tn}`);
+    return;
+  }catch(e){ /* clipboard API unavailable in this context — fall back below */ }
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = tn; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast(`Copied ${tn}`);
+  }catch(e){
+    toast('Could not copy — please select the tracking number manually');
+  }
+}
+
+/* ---------- Nice, deterministic avatars for staff profiles ---------- */
+const AVATAR_PALETTE = [
+  ['#0F6E5C','#49D9AF'], ['#2A5FA5','#82B2EA'], ['#B96A1E','#E7A758'],
+  ['#AE3527','#EA8A7C'], ['#6B4C9A','#B79CE0'], ['#1E7A45','#74D89A'],
+  ['#A5342A','#E28677'], ['#2E5C6E','#7BC2D9'],
+];
+function hashStr(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+// A small abstract gradient-and-initials avatar, generated locally (no
+// external avatar service — the published tool can't call one) but unique
+// and stable per person: same name + Staff ID always renders the same mark.
+function avatarSVG(name, seedExtra, size){
+  size = size || 34;
+  const h = hashStr((name||'?') + '|' + (seedExtra||''));
+  const [c1, c2] = AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+  const angle = h % 360;
+  const initials = (name||'?').trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
+  const gid = 'av' + (h % 1000000) + '_' + size;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="border-radius:99px; display:block; flex-shrink:0;">
+    <defs><linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(${angle} .5 .5)">
+      <stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>
+    </linearGradient></defs>
+    <rect width="40" height="40" rx="20" fill="url(#${gid})"/>
+    <circle cx="${10+(h%14)}" cy="${8+(h%10)}" r="${9+(h%6)}" fill="#ffffff" opacity="0.14"/>
+    <circle cx="${28-(h%12)}" cy="${30-(h%8)}" r="${7+(h%5)}" fill="#000000" opacity="0.10"/>
+    <text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-family="Libre Franklin, sans-serif" font-weight="700" font-size="15" fill="#ffffff">${esc(initials)}</text>
+  </svg>`;
+}
+
+/* ---------- Notifications (top-right bell) ---------- */
+const BELL_ICON = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+function myNotifications(){
+  if(!currentUser) return [];
+  return state.notifications.filter(n=>{
+    const aud = n.audience || {};
+    if(aud.type==='user') return aud.id===currentUser.id;
+    if(aud.type==='role') return (aud.roles||[]).includes(currentUser.role);
+    return false;
+  }).slice().sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+}
+function unreadNotifications(){
+  if(!currentUser) return [];
+  return myNotifications().filter(n=> !(n.readBy||[]).includes(currentUser.id));
+}
+async function notifyRole(roles, data){
+  const doc = Object.assign({ audience:{ type:'role', roles }, createdAt:new Date().toISOString(), readBy:[] }, data);
+  if(db){ await db.collection('notifications').add(doc); }
+  else { state.notifications.unshift(Object.assign({ id:'local-n'+Date.now()+Math.random().toString(36).slice(2) }, doc)); render(); }
+}
+async function notifyUser(userId, data){
+  if(!userId) return;
+  const doc = Object.assign({ audience:{ type:'user', id:userId }, createdAt:new Date().toISOString(), readBy:[] }, data);
+  if(db){ await db.collection('notifications').add(doc); }
+  else { state.notifications.unshift(Object.assign({ id:'local-n'+Date.now()+Math.random().toString(36).slice(2) }, doc)); render(); }
+}
+async function markNotificationRead(id){
+  const n = state.notifications.find(x=>x.id===id);
+  if(!n || !currentUser) return;
+  if((n.readBy||[]).includes(currentUser.id)) return;
+  const readBy = (n.readBy||[]).concat([currentUser.id]);
+  if(db){ await db.doc(`notifications/${id}`).update({ readBy }); }
+  else { n.readBy = readBy; render(); }
+}
+async function markAllNotificationsRead(){
+  const unread = unreadNotifications();
+  for(const n of unread){ await markNotificationRead(n.id); }
+}
+function handleNotificationClick(id){
+  const n = state.notifications.find(x=>x.id===id);
+  if(!n) return;
+  markNotificationRead(id);
+  notifPanelOpen = false;
+  if(n.refType==='parcel' && n.refId){
+    currentRole = 'admin';
+    if(findParcel(n.refId)){ adminDetail = n.refId; }
+    else { adminDetail = null; toast(`${n.refId} is no longer available — it may have been deleted.`); }
+  }
+  render();
+}
+
+/* ---------- Activity log: every task a logged-in user performs, so a ---------- */
+/* superadmin can see the exact staff or admin who did it. ---------- */
+async function logActivity(action, opts){
+  opts = opts || {};
+  const actor = opts.actor || currentUser;
+  if(!actor) return;
+  const doc = {
+    actorId: actor.id, actorName: actor.name, actorStaffId: actor.staffId, actorRole: actor.role,
+    action, summary: opts.summary || action,
+    targetType: opts.targetType || null, targetId: opts.targetId || null,
+    createdAt: new Date().toISOString(),
+  };
+  if(db){ await db.collection('activityLog').add(doc); }
+  else { state.activityLog.unshift(Object.assign({ id:'local-al'+Date.now()+Math.random().toString(36).slice(2) }, doc)); render(); }
+}
+
+/* ---------- Parcel-deletion requests: any staff can request, only Admin / ---------- */
+/* Superadmin can approve or decline one. ---------- */
+async function requestParcelDeletion(tn, reason){
+  if(!currentUser) return;
+  const p = findParcel(tn);
+  const now = new Date().toISOString();
+  const doc = {
+    trackingNumber: tn, reason, status:'pending',
+    requestedBy: { id:currentUser.id, name:currentUser.name, staffId:currentUser.staffId },
+    requestedAt: now, resolvedBy:null, resolvedAt:null, resolutionNote:'',
+  };
+  if(db){ await db.collection('deletionRequests').add(doc); }
+  else { state.deletionRequests.unshift(Object.assign({ id:'local-dr'+Date.now() }, doc)); render(); }
+  await notifyRole(['admin','superadmin'], {
+    title:'Deletion request submitted',
+    body:`${currentUser.name} requested deletion of ${tn}${p?` (${p.receiver.name})`:''}: ${reason}`,
+    kind:'deletion_requested', refType:'parcel', refId:tn,
+  });
+  logActivity('deletion_requested', { summary:`Requested deletion of ${tn}: ${reason}`, targetType:'parcel', targetId:tn });
+}
+async function resolveDeletionRequest(requestId, decision, note){
+  const reqDoc = state.deletionRequests.find(r=>r.id===requestId);
+  if(!reqDoc || !currentUser) return;
+  const now = new Date().toISOString();
+  const patch = {
+    status:decision,
+    resolvedBy:{ id:currentUser.id, name:currentUser.name, staffId:currentUser.staffId },
+    resolvedAt:now, resolutionNote: note||'',
+  };
+  if(db){ await rpc('resolve_deletion',{request_id:requestId,decision,note:note||''}); }
+  else { Object.assign(reqDoc, patch); }
+  if(decision==='approved'){
+    if(!db) { state.parcels = state.parcels.filter(p=>p.trackingNumber!==reqDoc.trackingNumber); }
+  }
+  if(!db) render();
+  if(reqDoc.requestedBy && reqDoc.requestedBy.id){
+    await notifyUser(reqDoc.requestedBy.id, {
+      title: decision==='approved' ? 'Deletion request approved' : 'Deletion request declined',
+      body: decision==='approved'
+        ? `${reqDoc.trackingNumber} was permanently deleted by ${currentUser.name}.`
+        : `${currentUser.name} declined your request to delete ${reqDoc.trackingNumber}${note?`: ${note}`:''}.`,
+      kind: decision==='approved' ? 'deletion_approved' : 'deletion_rejected',
+      refType:'parcel', refId: reqDoc.trackingNumber,
+    });
+  }
+  logActivity(decision==='approved' ? 'deletion_approved' : 'deletion_declined', {
+    summary: decision==='approved'
+      ? `Approved deletion of ${reqDoc.trackingNumber} — record permanently removed`
+      : `Declined the deletion request for ${reqDoc.trackingNumber}${note?`: ${note}`:''}`,
+    targetType:'parcel', targetId: reqDoc.trackingNumber,
+  });
+}
+
+// Classifies one history entry as a carried-out step, a delivery failure, or
+// the note marking a delivery-exception parcel as re-booked, so it gets a
+// distinct tick / cross / redo marker and color instead of one generic dot.
+function historyEntryKind(h){
+  if(h.note && h.note.indexOf('Re-booked after a delivery exception') === 0) return 'rebooked';
+  if(h.status === 'exception'){
+    return (h.note && h.note.indexOf('Re-booked as new parcel') === 0) ? 'rebooked' : 'failed';
+  }
+  return 'done';
+}
+function markerTone(kind){
+  if(kind==='failed') return { bg:'var(--red-soft)', line:'var(--red-line)', fg:'var(--red)' };
+  if(kind==='rebooked') return { bg:'var(--amber-soft)', line:'var(--amber-line)', fg:'var(--amber)' };
+  return { bg:'var(--green-soft)', line:'var(--green-line)', fg:'var(--green)' };
+}
+// Follows rebookedFrom/rebookedTo in both directions to collect every parcel
+// in this delivery's re-book chain (usually just one, but two or more once a
+// parcel has been re-booked), so the full past record can be shown together.
+function getRebookChain(p){
+  let earliest = p;
+  const backSeen = new Set([p.trackingNumber]);
+  while(earliest.rebookedFrom && !backSeen.has(earliest.rebookedFrom)){
+    const prev = findParcel(earliest.rebookedFrom);
+    if(!prev) break;
+    backSeen.add(prev.trackingNumber);
+    earliest = prev;
+  }
+  const chain = [];
+  const fwdSeen = new Set();
+  let node = earliest;
+  while(node && !fwdSeen.has(node.trackingNumber)){
+    chain.push(node);
+    fwdSeen.add(node.trackingNumber);
+    node = node.rebookedTo ? findParcel(node.rebookedTo) : null;
+  }
+  return chain;
+}
+// Every timestamped event for this delivery, across every parcel it was ever
+// re-booked as/from, oldest first — the full traceable record in one list.
+function combinedHistory(p){
+  const chain = getRebookChain(p);
+  if(chain.length <= 1) return (p.history||[]).map(h=>Object.assign({}, h, { _tn:p.trackingNumber }));
+  const merged = [];
+  chain.forEach(cp=>(cp.history||[]).forEach(h=>merged.push(Object.assign({}, h, { _tn:cp.trackingNumber }))));
+  merged.sort((a,b)=> new Date(a.timestamp) - new Date(b.timestamp));
+  return merged;
+}
+// Shared timeline renderer used by both the customer tracking view and the
+// admin detail view, so every parcel's full record — including steps that
+// happened under a previous or later tracking number — looks the same.
+function renderHistoryTimeline(history, currentTn){
+  return (history||[]).slice().reverse().map(h=>{
+    const kind = historyEntryKind(h);
+    const tone = markerTone(kind);
+    const label = kind==='rebooked' ? 'Re-booked' : ((STATUS_META[h.status]||{}).label || h.status);
+    const tnTag = (h._tn && h._tn !== currentTn) ? `${tnHtml(h._tn, {style:'font-weight:700;'})} &middot; ` : '';
+    return `
+      <div class="t-step">
+        <div class="t-step-line"></div>
+        <div class="t-dot" style="background:${tone.bg}; border-color:${tone.line}; color:${tone.fg};">${MARKER_ICON[kind]}</div>
+        <div class="t-body">
+          <div class="t-label">${tnTag}${esc(label)}</div>
+          <div class="t-when">${fmtWhen(h.timestamp)}</div>
+          ${h.location?`<div class="t-loc">${esc(h.location)}</div>`:''}
+          ${h.note?`<div class="t-note">${esc(h.note)}</div>`:''}
+          ${h.actor?`<div class="t-actor">${esc(h.actor)}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+}
+function applyClient(id){
+  const c = state.clients.find(x=>x.id===id);
+  const f = document.getElementById('bookForm');
+  if(!f) return;
+  if(!c){ toast('Client not found'); return; }
+  f.s_name.value = c.name || '';
+  f.s_phone.value = c.phone || '';
+  f.s_email.value = c.email || '';
+  f.s_city.value = c.city || '';
+  f.client_id.value = c.id;
+  const sel = document.getElementById('clientSelect');
+  if(sel) sel.value = c.id;
+  bookDraft.s_name = c.name || ''; bookDraft.s_phone = c.phone || ''; bookDraft.s_email = c.email || ''; bookDraft.s_city = c.city || ''; bookDraft.client_id = c.id;
+  toast('Sender filled from client: ' + c.name);
+}
+function clearSenderFields(){
+  const f = document.getElementById('bookForm');
+  if(!f) return;
+  f.s_name.value = ''; f.s_phone.value = ''; f.s_email.value = ''; f.s_city.value = '';
+  f.client_id.value = '';
+  bookDraft.s_name = ''; bookDraft.s_phone = ''; bookDraft.s_email = ''; bookDraft.s_city = ''; bookDraft.client_id = '';
+}
+
+// Re-books a delivery-exception parcel under its OWN tracking number — no
+// new tracking ID, no booking form to fill in again. It's reset straight
+// back into the warehouse queue (status: booked) ready for "Mark Received
+// In-Store", with a "Re-booked" entry appended to its own history so the
+// exception, the re-book, and everything that follows all stay on one
+// continuous timestamped record for that one tracking number.
+async function rebookParcel(tn){
+  if(db){ await rpc('transition_parcel',{tracking_number:tn,next_status:'booked'}); currentRole='warehouse'; adminDetail=null; render(); return; }
+  const p = findParcel(tn);
+  if(!p) return;
+  const now = new Date().toISOString();
+  const actorLabel = currentUser ? `${currentUser.name} (${currentUser.staffId})` : '';
+  const entry = {
+    status:'booked', label:STATUS_META.booked.label, timestamp:now,
+    location:(p.sender && p.sender.city) || '', actor:actorLabel,
+    note:'Re-booked after a delivery exception — ready for warehouse processing',
+  };
+  const history = (p.history || []).concat([entry]);
+  const patch = { status:'booked', rider:null, history, updatedAt:now };
+  if(db){ await db.doc(`parcels/${tn}`).update(patch); }
+  else { Object.assign(p, patch); render(); }
+  adminDetail = null;
+  currentRole = 'warehouse';
+  render();
+  toast(`${tn} re-booked — ready for warehouse processing`);
+  logActivity('parcel_rebooked', { summary:`Re-booked ${tn} after a delivery exception`, targetType:'parcel', targetId:tn });
+}
+
+/* ============================== Init ============================== */
+let subscriptions = [];
+function stopSubscriptions(){ subscriptions.forEach(stop=>stop()); subscriptions = []; }
+function clearStaffData(){
+  stopSubscriptions();
+  for(const key of ['riders','clients','admins','parcels','deletionRequests','notifications','activityLog']) state[key] = [];
+  currentUser = null; selectedParcel = null; trackLookup = { tn:null, parcel:null };
+  bookingConfirm = null; adminDetail = null; adminUserModal = null; resetBookDraft();
+}
+async function rpc(name, args){
+  const { data, error } = await db._client.rpc(name,args);
+  if(error) throw error;
+  return data;
+}
+init();
+async function init(){
+  document.getElementById('clock').textContent = fmtClock();
+  setInterval(()=>{ document.getElementById('clock').textContent = fmtClock(); }, 30000);
+  window.addEventListener('unhandledrejection', event=>{ console.error(event.reason); toast(event.reason?.message || 'Operation failed. Please retry.'); document.querySelectorAll('#main button:disabled').forEach(b=>b.disabled=false); });
+  bindShell();
+  render();
+
+  if(!backendConfigured()){
+    document.getElementById('connbar').classList.add('show');
+    document.getElementById('connbar').textContent = window.TRACKER_CONFIG?.demo ? 'DEMO — sample data only. Changes are lost on refresh; messages are not sent.' : 'Setup required: configure the Supabase project in config.js. See README.md.';
+    if(window.TRACKER_CONFIG?.demo) seedLocalOnly();
+    render();
+    return;
+  }
+  db = createSupabaseAdapter(SUPABASE_URL, SUPABASE_ANON_KEY);
+  try{
+    await restoreSupabaseSession();
+    if(currentUser) subscribe();
+    db._client.auth.onAuthStateChange((event)=>{
+      if(event==='SIGNED_OUT'){ clearStaffData(); render(); }
+    });
+  }catch(e){
+    console.error(e);
+    document.getElementById('connbar').classList.add('show');
+    document.getElementById('connbar').textContent = 'Could not reach the backend — check SUPABASE_URL/SUPABASE_ANON_KEY and that the migration has been run.';
+  }
+}
+
+function bindShell(){
+  // Nav buttons are re-rendered on every render() (their active state and
+  // visibility depend on login state), so this delegated listener on the
+  // stable parent element keeps working without needing to be re-bound.
+  document.getElementById('roleNav').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-role]');
+    if(!btn) return;
+    currentRole = btn.dataset.role;
+    render();
+  });
+  document.getElementById('accountArea').addEventListener('click', (e)=>{
+    if(e.target.closest('[data-staff-login]')){ currentRole = 'warehouse'; render(); return; }
+    if(e.target.closest('[data-logout]')){ logout(); return; }
+    if(e.target.closest('#notifBellBtn')){ notifPanelOpen = !notifPanelOpen; profilePanelOpen = false; render(); return; }
+    if(e.target.closest('#profileBtn')){ profilePanelOpen = !profilePanelOpen; notifPanelOpen = false; render(); return; }
+    if(e.target.closest('#markAllReadBtn')){ markAllNotificationsRead(); return; }
+    const notifBtn = e.target.closest('[data-notif]');
+    if(notifBtn){ handleNotificationClick(notifBtn.dataset.notif); return; }
+  });
+  // Close the notification/profile dropdowns on any click outside them.
+  // Registered on the CAPTURE phase so it inspects e.target before the
+  // accountArea click handler (bubble phase, below) has a chance to
+  // re-render and detach it — otherwise every toggle click would look like
+  // an "outside" click by the time it reached this listener and the panel
+  // would close again in the same click that just opened it.
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#accountArea') && (notifPanelOpen || profilePanelOpen)){
+      notifPanelOpen = false; profilePanelOpen = false; render();
+    }
+  }, true);
+  // Tracking-number "click to copy" — delegated on the capture phase so it
+  // fires (and can stop propagation) before an ancestor row's own click
+  // handler, e.g. an Admin-table row that opens the detail modal on click.
+  const copyHandler = (e)=>{
+    const el = e.target.closest('[data-copy-tn]');
+    if(!el) return;
+    e.stopPropagation();
+    if(e.type==='keydown' && e.key!=='Enter' && e.key!==' ') return;
+    if(e.type==='keydown') e.preventDefault();
+    copyTrackingNumber(el.dataset.copyTn);
+  };
+  document.addEventListener('click', copyHandler, true);
+  document.addEventListener('keydown', copyHandler, true);
+}
+
+/* ============================== Seed sample data ============================== */
+function seedLocalOnly(){
+  // Fallback so the preview still works if the db capability is unavailable.
+  state.clients = [
+    { id:'local-c1', name:'Amaka Traders', phone:'0803 555 2210', city:'Lagos', createdAt:new Date(Date.now()-9*86400000).toISOString() },
+    { id:'local-c2', name:'Bello Fabrics & Co', phone:'0805 220 9911', city:'Kano', createdAt:new Date(Date.now()-5*86400000).toISOString() },
+  ];
+  state.admins = [
+    { id:'local-a1', name:'System Administrator', staffId:'SK-0001', password:'admin123', role:'superadmin', active:true, createdAt:new Date(Date.now()-9*86400000).toISOString() },
+  ];
+  state.deletionRequests = [];
+  state.notifications = [
+    { id:'local-n0', audience:{ type:'role', roles:['admin','superadmin'] }, title:'Welcome to Stallionking Tracker', body:'Delivery exceptions and parcel-deletion requests will show up here as they happen.', kind:'info', refType:null, refId:null, createdAt:new Date(Date.now()-3600000).toISOString(), readBy:[] },
+  ];
+  state.activityLog = [];
+  state.ready = true;
+  tryRestoreSession();
+}
+
+/* ============================== Subscriptions ============================== */
+function subscribe(){
+  stopSubscriptions();
+  subscriptions.push(db.doc('settings/company').onSnapshot(snap=>{
+    if(snap.exists) state.settings = snap.data();
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('riders').onSnapshot(qs=>{
+    state.riders = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('clients').onSnapshot(qs=>{
+    state.clients = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('admins').onSnapshot(qs=>{
+    state.admins = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    // Keep an already-logged-in profile's badge (name/role) in sync if a
+    // superadmin edits it elsewhere, and log out if the account was removed.
+    if(currentUser){
+      const me = findAdminById(currentUser.id);
+      if(!me || me.active===false){ logout(); return; }
+      else { currentUser = { id:me.id, name:me.name, staffId:me.staffId, role:me.role }; }
+    }
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('parcels').orderBy('createdAt','desc').onSnapshot(qs=>{
+    state.parcels = qs.docs.map(d=>d.data());
+    state.ready = true;
+    render.preserve=true; render(); render.preserve=false;
+  }, (err)=>{
+    console.error(err);
+    toast('Lost connection to shared data');
+  }));
+
+  subscriptions.push(db.collection('deletionRequests').onSnapshot(qs=>{
+    state.deletionRequests = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('notifications').orderBy('createdAt','desc').limit(50).onSnapshot(qs=>{
+    state.notifications = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+
+  subscriptions.push(db.collection('activityLog').orderBy('createdAt','desc').limit(300).onSnapshot(qs=>{
+    state.activityLog = qs.docs.map(d=>({ id:d.id, ...d.data() }));
+    render.preserve=true; render(); render.preserve=false;
+  }, ()=>{}));
+}
+
+// Builds the curated tracking-ID messages for whichever contact details were
+// captured at booking (sender and/or receiver email/phone). A page published
+// this way has no backend or outbound network path to actually dispatch real
+// email/SMS, so this composes the exact message content that would be sent
+// and records it on the parcel — shown to staff as a "sent" confirmation
+// right after booking, and kept on the parcel's Admin detail for the record.
+function composeTrackingNotifications(doc){
+  const company = state.settings.name || 'STALLIONKING TRACKER';
+  const route = `${doc.sender.city} → ${doc.receiver.city}`;
+  const now = new Date().toISOString();
+  const contacts = [
+    { role:'Sender',   name:doc.sender.name,   email:doc.sender.email,   phone:doc.sender.phone },
+    { role:'Receiver', name:doc.receiver.name, email:doc.receiver.email, phone:doc.receiver.phone },
+  ];
+  const notifications = [];
+  contacts.forEach(c=>{
+    if(c.email){
+      notifications.push({
+        channel:'email', recipientRole:c.role, to:c.email, sentAt:now,
+        subject:`Your parcel is booked — Tracking No. ${doc.trackingNumber}`,
+        body:`Hi ${c.name}, your parcel with ${company} has been booked. Tracking number: ${doc.trackingNumber}. Route: ${route}. Track it anytime on our Track a Parcel page using this number. Thank you for shipping with us.`,
+      });
+    }
+    if(c.phone){
+      notifications.push({
+        channel:'sms', recipientRole:c.role, to:c.phone, sentAt:now,
+        body:`${company}: Your tracking No. is ${doc.trackingNumber}. Track it anytime on our website using this number. Thank you!`,
+      });
+    }
+  });
+  return notifications;
+}
+
+/* ============================== Write helpers ============================== */
+async function createParcel(payload){
+  if(db){
+    // Real backend: the tracking number, the parcel doc, AND the actual
+    // email/SMS notifications are all generated server-side (see
+    // supabase/functions/book-parcel) — the Resend/Termii API keys used to
+    // send them can only live there, never in this browser-facing file.
+    // The function also writes its own activity-log entries, so there's
+    // nothing left to log client-side here.
+    return await callFunction('book-parcel', {
+      requestId:bookingRequestId,
+      sender: payload.sender,
+      receiver: payload.receiver,
+      description: payload.description,
+      weightKg: payload.weightKg,
+      serviceType: payload.serviceType,
+      clientId: payload.clientId || null,
+      sendNotification: payload.sendNotification !== false,
+    });
+  }
+
+  // Local demo mode (no backend configured) — unchanged from before:
+  // compose the notification preview locally, there's nowhere real to send it.
+  let tn;
+  for(let attempt=0; attempt<5; attempt++){
+    tn = `${state.settings.prefix || 'TRK'}-${genCode(8)}`;
+    const existing = state.parcels.find(p=>p.trackingNumber===tn);
+    if(!existing) break;
+  }
+  const now = new Date().toISOString();
+  const actorLabel = currentUser ? `${currentUser.name} (${currentUser.staffId})` : 'Customer';
+  const entry = {
+    status:'booked', label:STATUS_META.booked.label, timestamp:now, location:payload.sender.city || '', actor:actorLabel, note:'',
+  };
+  const doc = {
+    trackingNumber: tn,
+    createdAt: now, updatedAt: now,
+    sender: payload.sender, receiver: payload.receiver,
+    senderClientId: payload.clientId || null,
+    rebookedFrom: null, rebookedTo: null,
+    description: payload.description, weightKg: payload.weightKg, serviceType: payload.serviceType,
+    status:'booked', rider:null,
+    history:[entry],
+  };
+  const wantsSend = payload.sendNotification !== false;
+  doc.notifications = wantsSend ? composeTrackingNotifications(doc) : [];
+  state.parcels.unshift(doc); render();
+  logActivity('parcel_booked', { summary:`Booked parcel ${tn} for ${payload.receiver.name}`, targetType:'parcel', targetId:tn });
+  if(doc.notifications.length){
+    logActivity('tracking_notified', { summary:`Sent tracking ID ${tn} to ${doc.notifications.length} recipient${doc.notifications.length===1?'':'s'} by email/SMS`, targetType:'parcel', targetId:tn });
+  }
+  return { tn, notifications: doc.notifications, notificationsSkipped: !wantsSend };
+}
+
+async function advanceStatus(tn, statusKey, extra){
+  if(db){ await rpc('transition_parcel',{tracking_number:tn,next_status:statusKey,details:extra||{}}); return; }
+  extra = extra || {};
+  const p = findParcel(tn);
+  if(!p) return;
+  const now = new Date().toISOString();
+  const actorLabel = currentUser ? `${currentUser.name} (${currentUser.staffId})` : (extra.actor || '');
+  const entry = {
+    status:statusKey, label:STATUS_META[statusKey].label, timestamp:now,
+    location: extra.location || '', actor: actorLabel, note: extra.note || '',
+  };
+  const history = (p.history || []).concat([entry]);
+  const patch = { status:statusKey, updatedAt:now, history };
+  if(extra.rider !== undefined) patch.rider = extra.rider;
+  if(db){ await db.doc(`parcels/${tn}`).update(patch); }
+  else { Object.assign(p, patch); render(); }
+  const label = (STATUS_META[statusKey]||{}).label || statusKey;
+  logActivity('parcel_' + statusKey, {
+    summary: `Marked ${tn} as "${label}"${extra.note?` — ${extra.note}`:''}`,
+    targetType:'parcel', targetId:tn,
+  });
+}
+
+// The Warehouse dashboard exposes a single "Received In-Store" action
+// instead of the three separate clicks it used to take (Mark Received
+// In-Store / Mark Packaged / Scan for Transit). One click here walks the
+// parcel through every remaining pre-dispatch status in one write, so it's
+// immediately ready for the Dispatch queue — while still recording the full
+// granular history (Received In-Store, Packaged, Scanned / In Transit) that
+// Admin's history timeline and STATUS_META detail rely on elsewhere.
+async function receiveInStore(tn){
+  if(db){ await rpc('transition_parcel',{tracking_number:tn,next_status:'scanned'}); return; }
+  const p = findParcel(tn);
+  if(!p) return;
+  const fromIdx = STATUS_FLOW.indexOf(p.status);
+  const toIdx = STATUS_FLOW.indexOf('scanned');
+  const remaining = fromIdx>=0 ? STATUS_FLOW.slice(fromIdx+1, toIdx+1) : [];
+  if(!remaining.length) return;
+  const now = Date.now();
+  const actorLabel = currentUser ? `${currentUser.name} (${currentUser.staffId})` : '';
+  const loc = (p.sender && p.sender.city) ? `${p.sender.city} Hub` : '';
+  const newEntries = remaining.map((statusKey, i) => ({
+    status: statusKey, label: STATUS_META[statusKey].label,
+    timestamp: new Date(now + i).toISOString(), // tiny offset keeps entries in order
+    location: loc, actor: actorLabel, note: '',
+  }));
+  const history = (p.history || []).concat(newEntries);
+  const patch = { status:'scanned', updatedAt: new Date(now + remaining.length - 1).toISOString(), history };
+  if(db){ await db.doc(`parcels/${tn}`).update(patch); }
+  else { Object.assign(p, patch); render(); }
+  logActivity('parcel_received_in_store', { summary:`Marked ${tn} Received In-Store — processed and ready for dispatch`, targetType:'parcel', targetId:tn });
+}
+
+async function addRider(data){
+  if(db){ await db.collection('riders').add(data); }
+  else { state.riders.push({ id:'local-'+Date.now(), ...data }); render(); }
+  logActivity('rider_added', { summary:`Added rider ${data.name}`, targetType:'rider', targetId:data.name });
+}
+
+async function saveSettings(data){
+  if(db){ await db.doc('settings/company').set(Object.assign({}, state.settings, data)); }
+  else { Object.assign(state.settings, data); render(); }
+  logActivity('settings_updated', { summary:'Updated company settings', targetType:'settings', targetId:null });
+}
+
+async function addClient(data){
+  if(db){ await db.collection('clients').add(data); }
+  else { state.clients.push({ id:'local-'+Date.now(), ...data }); render(); }
+  logActivity('client_added', { summary:`Added client ${data.name}`, targetType:'client', targetId:data.name });
+}
+
+async function deleteClient(id){
+  const c = state.clients.find(x=>x.id===id);
+  if(db){ await db.doc(`clients/${id}`).delete(); }
+  else { state.clients = state.clients.filter(c2=>c2.id!==id); render(); }
+  logActivity('client_deleted', { summary:`Removed client ${c?c.name:id}`, targetType:'client', targetId:id });
+}
+
+/* ---------- Admin (staff login) accounts — superadmin only ---------- */
+async function addAdmin(data){
+  if(db){ await db.collection('admins').add(data); }
+  else { state.admins.push({ id:'local-a'+Date.now(), ...data }); render(); }
+}
+async function updateAdmin(id, patch){
+  if(db){ await callFunction('update-staff',{staffId:findAdminById(id).staffId,...patch}); }
+  else {
+    const a = findAdminById(id);
+    if(a) Object.assign(a, patch);
+    if(currentUser && currentUser.id===id) currentUser = Object.assign({}, currentUser, { name:patch.name??currentUser.name, staffId:patch.staffId??currentUser.staffId, role:patch.role??currentUser.role });
+    render();
+  }
+}
+async function deleteAdmin(id){
+  if(db){ await callFunction('update-staff',{staffId:findAdminById(id).staffId,delete:true}); }
+  else { state.admins = state.admins.filter(a=>a.id!==id); render(); }
+}
+
+/* ============================== Render root ============================== */
+function render(){
+  const saved = Array.from(document.querySelectorAll('#main input, #main textarea, #main select')).filter(el=>el.id || el.name).map(el=>({key:el.id ? '#'+CSS.escape(el.id) : '[name="'+CSS.escape(el.name)+'"]', value:el.value, checked:el.checked, focused:el===document.activeElement, start:el.selectionStart, end:el.selectionEnd}));
+  const sameView = render.preserve && render.lastRole === currentRole;
+  render.lastRole = currentRole;
+  document.getElementById('brandName').textContent = state.settings.name || 'STALLIONKING TRACKER';
+  document.getElementById('brandTagline').textContent = state.settings.tagline || '';
+  document.getElementById('accountArea').innerHTML = renderAccountArea();
+  document.getElementById('roleNav').innerHTML = renderNav();
+  const main = document.getElementById('main');
+  if(currentRole==='admins' && (!currentUser || currentUser.role!=='superadmin')) currentRole = 'admin'; // guard: Admin Users is superadmin-only
+  if(currentRole==='activity' && (!currentUser || currentUser.role!=='superadmin')) currentRole = 'admin'; // guard: Activity Log is superadmin-only
+  if(currentRole==='track') main.innerHTML = viewTrack();
+  else if(!currentUser) main.innerHTML = viewLogin();
+  else if(currentRole==='warehouse') main.innerHTML = viewWarehouse();
+  else if(currentRole==='clients') main.innerHTML = viewClients();
+  else if(currentRole==='dispatch') main.innerHTML = viewDispatch();
+  else if(currentRole==='admins') main.innerHTML = viewAdminUsers();
+  else if(currentRole==='activity') main.innerHTML = viewActivityLog();
+  else main.innerHTML = viewAdmin();
+  bindView();
+  if(sameView) for(const item of saved){ const el=main.querySelector(item.key); if(!el) continue; if(el.type!=='file'){ el.value=item.value; el.checked=item.checked; } if(item.focused){ el.focus(); if(item.start!=null && el.setSelectionRange) el.setSelectionRange(item.start,item.end); } }
+}
+function renderNav(){
+  return NAV_ITEMS.map(item=>`<button data-role="${item.role}" class="${currentRole===item.role?'active':''}">${esc(item.label)}</button>`).join('')
+    + (currentUser && currentUser.role==='superadmin' ? `<button data-role="admins" class="${currentRole==='admins'?'active':''}">Admin Users</button>` : '')
+    + (currentUser && currentUser.role==='superadmin' ? `<button data-role="activity" class="${currentRole==='activity'?'active':''}">Activity Log</button>` : '');
+}
+function renderAccountArea(){
+  if(!currentUser){
+    return `<button class="btn btn-sm" data-staff-login>Staff Login</button>`;
+  }
+  const unread = unreadNotifications().length;
+  return `
+    <div class="topright">
+      <div class="icon-btn-wrap">
+        <button type="button" class="icon-btn" id="notifBellBtn" aria-label="Notifications">
+          ${BELL_ICON}
+          ${unread ? `<span class="badge-dot">${unread>9?'9+':unread}</span>` : ''}
+        </button>
+        ${notifPanelOpen ? renderNotifPanel() : ''}
+      </div>
+      <div class="icon-btn-wrap">
+        <button type="button" class="avatar-btn" id="profileBtn" aria-label="Profile menu">${avatarSVG(currentUser.name, currentUser.staffId, 34)}</button>
+        ${profilePanelOpen ? renderProfilePanel() : ''}
+      </div>
+    </div>`;
+}
+function renderNotifPanel(){
+  const notifs = myNotifications().slice(0,20);
+  const anyUnread = notifs.some(n=>!(n.readBy||[]).includes(currentUser.id));
+  const items = notifs.map(n=>{
+    const unread = !(n.readBy||[]).includes(currentUser.id);
+    return `
+      <button type="button" class="notif-item ${unread?'unread':''}" data-notif="${esc(n.id)}">
+        <div class="notif-dot" ${unread?'':'hidden'}></div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}</div>
+          <div class="notif-text">${esc(n.body)}</div>
+          <div class="notif-when">${fmtWhen(n.createdAt)}</div>
+        </div>
+      </button>`;
+  }).join('');
+  return `
+    <div class="dropdown-panel" id="notifPanel">
+      <div class="dropdown-head">
+        <h3>Notifications</h3>
+        ${anyUnread ? `<button type="button" class="link-btn" id="markAllReadBtn">Mark all read</button>` : ''}
+      </div>
+      <div class="notif-list">${items || `<div class="empty-state" style="padding:24px 14px;">No notifications yet.</div>`}</div>
+    </div>`;
+}
+function renderProfilePanel(){
+  const me = findAdminById(currentUser.id);
+  const memberSince = me && me.createdAt ? fmtWhen(me.createdAt) : '';
+  return `
+    <div class="dropdown-panel" id="profilePanel" style="width:250px;">
+      <div class="profile-panel-top">
+        ${avatarSVG(currentUser.name, currentUser.staffId, 46)}
+        <div style="min-width:0;">
+          <div style="font-weight:700; font-size:14px;">${esc(currentUser.name)}</div>
+          <div class="hint"><span class="staffid">${esc(currentUser.staffId)}</span></div>
+          <div class="role-tag" style="margin-top:2px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent);">${esc(roleLabel(currentUser.role))}</div>
+        </div>
+      </div>
+      <div class="profile-panel-body">
+        ${memberSince ? `<div class="hint" style="margin-bottom:12px;">Member since ${memberSince}</div>` : ''}
+        <button type="button" class="btn btn-sm" style="width:100%;" data-logout>Log out</button>
+      </div>
+    </div>`;
+}
+
+/* ============================== Track view ============================== */
+function viewTrack(){
+  const chips = state.parcels.slice(0,3).map(p=>{
+    return `<button class="chip" data-try="${esc(p.trackingNumber)}">${esc(p.trackingNumber)} — ${esc(p.sender.city)} → ${esc(p.receiver.city)}</button>`;
+  }).join('');
+
+  let detail = '';
+  if(db && !currentUser){
+    // Public customer lookup — parcels aren't directly readable without a
+    // staff session, so this renders from trackLookup (populated by the
+    // Track button's click handler via the public track edge function)
+    // instead of the state.parcels cache.
+    if(trackLookup.loading){
+      detail = `<div class="card card-pad" style="margin-top:18px;"><div class="empty-state">Looking up ${esc(trackLookup.tn||'')}&hellip;</div></div>`;
+    } else if(trackLookup.parcel){
+      detail = renderParcelDetail(trackLookup.parcel);
+    } else if(trackLookup.notFound){
+      detail = `
+      <div class="card card-pad" style="margin-top:18px;">
+        <div class="empty-state">${trackLookup.error ? 'Could not reach the tracking service — please try again in a moment.' : `No parcel found for <strong>${esc(trackLookup.tn)}</strong>. Check the tracking number and try again.`}</div>
+      </div>`;
+    }
+  } else if(selectedParcel){
+    const p = findParcel(selectedParcel);
+    detail = p ? renderParcelDetail(p) : `
+      <div class="card card-pad" style="margin-top:18px;">
+        <div class="empty-state">No parcel found for <strong>${esc(selectedParcel)}</strong>. Check the tracking number and try again.</div>
+      </div>`;
+  }
+
+  return `
+    <div class="track-hero">
+      <h1>Track your parcel</h1>
+      <div class="muted">Enter the tracking number from your receipt or SMS to see live status.</div>
+      <div class="search-row">
+        <input id="trackInput" placeholder="e.g. ${esc(state.settings.prefix||'STK')}-7F3K92XQ" value="${selectedParcel?esc(selectedParcel):''}" autocomplete="off">
+        <button class="btn btn-primary" id="trackBtn">Track</button>
+      </div>
+      ${chips ? `<div class="chips"><span class="hint" style="align-self:center;">Try a sample:</span>${chips}</div>` : ''}
+    </div>
+    ${detail}
+  `;
+}
+
+// The three-phase progress bar shown on the public Track view (see
+// TRACK_PHASES/trackPhaseIndex above). The final phase reads "Delivered"
+// once reached normally, or "Returned" (styled red) if the parcel ended in
+// a delivery exception instead.
+function renderTrackStepper(p){
+  const phaseIdx = trackPhaseIndex(p.status);
+  const isReturned = p.status === 'exception';
+  return TRACK_PHASES.map((label, i)=>{
+    const isFinal = i === TRACK_PHASES.length - 1;
+    const shownLabel = (isFinal && isReturned) ? 'Returned' : label;
+    let cls, icon;
+    if(i < phaseIdx){
+      cls = 'done'; icon = MARKER_ICON.done;
+    } else if(i === phaseIdx){
+      if(isFinal){
+        cls = isReturned ? 'failed' : 'done';
+        icon = isReturned ? MARKER_ICON.failed : MARKER_ICON.done;
+      } else {
+        cls = 'current'; icon = MARKER_ICON.current;
+      }
+    } else {
+      cls = ''; icon = MARKER_ICON.pending;
+    }
+    return `<div class="stepper-step ${cls}"><div class="stepper-line"></div><div class="dot">${icon}</div><div class="lbl">${esc(shownLabel)}</div></div>`;
+  }).join('');
+}
+// The reason + free-text detail staff captured when flagging a return (see
+// EXCEPTION_REASONS and the Report Issue modal), for display at the
+// "Returned" phase on the Track view.
+function latestExceptionEntry(p){
+  return (p.history||[]).slice().reverse().find(h=>h.status==='exception') || null;
+}
+
+function renderParcelDetail(p){
+  const isException = p.status === 'exception';
+  const excEntry = isException ? latestExceptionEntry(p) : null;
+
+  const rider = p.rider ? `
+    <div class="rider-card">
+      <div class="rider-avatar">${esc((p.rider.name||'?').split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>
+      <div>
+        <div class="rname">${esc(p.rider.name)}</div>
+        <div class="rmeta">${esc(p.rider.phone||'')} &middot; Delivery rider</div>
+      </div>
+    </div>` : '';
+
+  const chain = getRebookChain(p);
+  const hist = renderHistoryTimeline(combinedHistory(p), p.trackingNumber);
+
+  return `
+    <div class="card card-pad" style="margin-top:18px;">
+      <div class="section-head">
+        <div>
+          <div class="route-row">${esc(p.sender.city)}<span class="route-arrow">&rarr;</span>${esc(p.receiver.city)}</div>
+          <div class="muted">Tracking ${tnHtml(p.trackingNumber)}</div>
+        </div>
+        ${pill(p.status)}
+      </div>
+      <div class="parcel-meta">
+        ${currentUser ? `<span><b>To:</b> ${esc(p.receiver.name)}</span>
+        <span><b>Phone:</b> ${esc(p.receiver.phone)}</span>
+        ${p.receiver.email?`<span><b>Email:</b> ${esc(p.receiver.email)}</span>`:''}
+        <span><b>Service:</b> ${esc(p.serviceType)}</span>
+        <span><b>Item:</b> ${esc(p.description)}</span>
+        <span><b>Weight:</b> ${esc(p.weightKg)}</span>` : `<span><b>Service:</b> ${esc(p.serviceType)}</span>`}
+      </div>
+      ${p.receiver.address ? `<div class="hint" style="margin-bottom:14px;"><b>Delivery address:</b> ${esc(p.receiver.address)}${p.receiver.landmark?` &middot; near ${esc(p.receiver.landmark)}`:''}</div>` : ''}
+      <div class="stepper">${renderTrackStepper(p)}</div>
+      ${isException ? `
+      <div class="rider-card" style="background:var(--red-soft); border-color:var(--red-line); align-items:flex-start;">
+        <div style="color:var(--red);">${MARKER_ICON.failed}</div>
+        <div>
+          <div class="rname">Delivery exception</div>
+          ${excEntry && excEntry.note ? `<div class="rmeta" style="margin-top:3px;"><b>Reason:</b> ${esc(excEntry.note)}</div>` : ''}
+          <div class="rmeta" style="margin-top:3px;">${p.rebookedTo?`This parcel was re-booked as ${tnHtml(p.rebookedTo)} — track that number for the current status.`:'See full history below for details.'}</div>
+        </div>
+      </div>` : ''}
+      ${p.rebookedFrom ? `<div class="hint" style="margin:10px 0;">Re-booked after a delivery exception on ${tnHtml(p.rebookedFrom)}.</div>` : ''}
+      ${rider}
+      <div class="section-head" style="margin-top:16px;">
+        <h2 style="font-size:13px;">Full history</h2>
+        ${chain.length>1?`<div class="muted" style="font-size:11px;">Includes ${chain.length} linked bookings for this delivery</div>`:''}
+      </div>
+      <div class="timeline">${hist}</div>
+    </div>
+  `;
+}
+
+/* ============================== Staff login ============================== */
+function viewLogin(){
+  const intendedLabel = (NAV_ITEMS.find(i=>i.role===currentRole)||{}).label || 'this section';
+  return `
+    <div class="login-wrap">
+      <div class="card card-pad">
+        <h1>Staff login</h1>
+        <div class="muted">Sign in with your Staff ID to access ${esc(intendedLabel)}.</div>
+        ${loginError ? `<div class="hint" style="color:var(--red); margin-top:10px;">${esc(loginError)}</div>` : ''}
+        <form id="loginForm" style="margin-top:16px;">
+          <div class="field"><label>Staff ID Number</label><input name="staffId" placeholder="e.g. SK-0001" required autocomplete="off" style="text-transform:uppercase;"></div>
+          <div class="field"><label>Password</label>${pwFieldHtml('<input type="password" name="password" required>')}</div>
+          <button class="btn btn-primary" style="width:100%;" type="submit">Log in</button>
+        </form>
+        <div class="demo-note">${db ? 'Use the Staff ID and password supplied by your administrator.' : window.TRACKER_CONFIG?.demo ? 'Demo: Staff ID SK-0001, password admin123.' : 'Connect a backend before signing in.'}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================== Warehouse view ============================== */
+function viewWarehouse(){
+  const bookingModal = bookingConfirm ? renderBookingConfirmModal(bookingConfirm) : '';
+  const pending = state.parcels.filter(p=>['booked','received','packaged'].includes(p.status));
+  const rows = pending.map(p=>{
+    return `
+      <tr>
+        <td>${tnHtml(p.trackingNumber)}</td>
+        <td>${esc(p.sender.city)} &rarr; ${esc(p.receiver.city)}</td>
+        <td>${esc(p.receiver.name)}</td>
+        <td>${pill(p.status)}</td>
+        <td><button class="btn btn-sm btn-primary" data-receive-instore="${esc(p.trackingNumber)}">Received In-Store</button></td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Warehouse &mdash; Book &amp; Process Parcels</h2><div class="muted">Register new parcels and move them through in-store handling.</div></div>
+    </div>
+    ${bookingModal}
+    <div style="display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start;">
+      <div class="card card-pad">
+        <div class="section-head"><h2>Book new parcel</h2></div>
+        <form id="bookForm">
+          <fieldset>
+            <legend>Sender</legend>
+            <div class="field">
+              <label>Frequent client (optional)</label>
+              <select id="clientSelect">
+                <option value="">— One-off sender, fill in below —</option>
+                ${state.clients.map(c=>`<option value="${esc(c.id)}" ${bookDraft.client_id===c.id?'selected':''}>${esc(c.name)} — ${esc(c.city||'')}</option>`).join('')}
+              </select>
+              <div class="hint" style="margin-top:5px;">Pick a saved client to fill in their sender details automatically — you'll only need to add the receiver.</div>
+            </div>
+            <input type="hidden" name="client_id" value="${esc(bookDraft.client_id)}">
+            <div class="field"><label>Full name</label><input name="s_name" required value="${esc(bookDraft.s_name)}"></div>
+            <div class="form-grid">
+              <div class="field"><label>Phone</label><input name="s_phone" required value="${esc(bookDraft.s_phone)}"></div>
+              <div class="field"><label>City</label><input name="s_city" required value="${esc(bookDraft.s_city)}"></div>
+            </div>
+            <div class="field"><label>Email (optional)</label><input type="email" name="s_email" placeholder="for tracking ID by email" value="${esc(bookDraft.s_email)}"></div>
+            <div class="hint" style="margin-top:-8px; margin-bottom:12px;">The tracking ID is sent to whichever sender/receiver email and phone are on file.</div>
+            <button type="button" class="btn btn-sm" id="saveSenderBtn" style="margin-top:2px;">+ Save as frequent sender</button>
+          </fieldset>
+          <fieldset>
+            <legend>Receiver</legend>
+            <div class="field"><label>Full name</label><input name="r_name" required value="${esc(bookDraft.r_name)}"></div>
+            <div class="form-grid">
+              <div class="field"><label>Phone</label><input name="r_phone" required value="${esc(bookDraft.r_phone)}"></div>
+              <div class="field"><label>Email</label><input type="email" name="r_email" placeholder="optional" value="${esc(bookDraft.r_email)}"></div>
+            </div>
+            <div class="field">
+              <label>Delivery address</label>
+              <input name="r_address" placeholder="Start typing, e.g. 43 Ku…" required autocomplete="off" list="addressSuggestions" value="${esc(bookDraft.r_address)}">
+              <datalist id="addressSuggestions">
+                ${ADDRESS_SUGGESTIONS.map(a=>`<option value="${esc(a)}">`).join('')}
+              </datalist>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>City</label><input name="r_city" required value="${esc(bookDraft.r_city)}"></div>
+              <div class="field">
+                <label>Nearest landmark</label>
+                <input name="r_landmark" placeholder="Start typing, e.g. Lekki…" autocomplete="off" list="landmarkSuggestions" value="${esc(bookDraft.r_landmark)}">
+                <datalist id="landmarkSuggestions">
+                  ${LANDMARK_SUGGESTIONS.map(l=>`<option value="${esc(l)}">`).join('')}
+                </datalist>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Package</legend>
+            <div class="field"><label>Description</label><input name="desc" placeholder="e.g. Documents, electronics" required value="${esc(bookDraft.desc)}"></div>
+            <div class="form-grid">
+              <div class="field"><label>Weight range</label><select name="weight" required>
+                <option value="" ${bookDraft.weight===''?'selected':''} disabled>Select weight&hellip;</option>
+                ${WEIGHT_BANDS.map(w=>`<option value="${esc(w.label)}" ${bookDraft.weight===w.label?'selected':''}>${esc(w.label)}</option>`).join('')}
+              </select></div>
+              <div class="field"><label>Service</label><select name="service"><option ${bookDraft.service==='Standard'?'selected':''}>Standard</option><option ${bookDraft.service==='Express'?'selected':''}>Express</option></select></div>
+            </div>
+          </fieldset>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" style="flex:1.4;" type="submit" data-action="save-and-send">Save &amp; Send Tracking ID</button>
+            <button class="btn" style="flex:1;" type="submit" data-action="save-only">Save Parcel</button>
+          </div>
+          <div class="hint" style="margin-top:8px;">"Save &amp; Send" emails/texts the tracking ID right away to whichever sender/receiver email and phone are on file. "Save Parcel" books it and generates the tracking number without notifying anyone yet.</div>
+        </form>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="table-wrap" style="border:0;">
+            <table>
+              <thead><tr><th>Tracking #</th><th>Route</th><th>Receiver</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>${rows || `<tr><td colspan="5"><div class="empty-state">No parcels awaiting warehouse action.</div></td></tr>`}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="hint">Showing parcels at Booked, Received, or Packaged stage. Once scanned, a parcel moves to Dispatch.</div>
+      </div>
+    </div>
+  `;
+}
+
+// Preview of the curated tracking-ID email/SMS just "sent" to whichever
+// sender/receiver contact details were on the booking (see
+// composeTrackingNotifications) — shown right after a parcel is booked, as
+// an inline dismissible panel (not a blocking overlay) so staff can keep
+// working — booking the next parcel, checking Dispatch, etc. — without
+// having to close it first.
+function renderBookingConfirmModal(bc){
+  const items = bc.notifications.map(n=>`
+    <div class="card card-pad" style="margin-bottom:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+        <div style="font-weight:700; font-size:12.5px;">${n.channel==='email'?'Email':'SMS'} to ${esc(n.recipientRole)}</div>
+        <div class="hint">${esc(n.to)} · ${db ? (n.delivered ? 'Accepted by provider' : 'Failed to send') : 'Demo preview'}</div>
+      </div>
+      ${n.subject ? `<div style="font-weight:600; font-size:12.5px; margin-top:6px;">${esc(n.subject)}</div>` : ''}
+      <div class="hint" style="margin-top:4px; white-space:pre-wrap;">${esc(n.body)}</div>
+    </div>`).join('');
+  return `
+    <div class="card card-pad" id="bookingConfirmPanel" style="margin-bottom:16px; border-color:var(--accent-line);">
+      <button class="modal-close" data-close-booking-confirm>&times;</button>
+      <div class="section-head"><div><h2 style="font-size:15px;">Parcel booked</h2><div class="muted" style="margin-top:2px;">${tnHtml(bc.tn)}</div></div></div>
+      ${bc.notifications.length ? `
+        <div class="hint" style="margin:10px 0 8px;">Tracking notification results:</div>
+        ${items}
+      ` : bc.notificationsSkipped
+        ? `<div class="hint" style="margin:10px 0;">Saved without notifying — "Save Parcel" was used, so no email or SMS was sent for this booking.</div>`
+        : `<div class="hint" style="margin:10px 0;">No email or phone was provided for the sender or receiver, so no tracking notification was sent.</div>`}
+      ${bc.notificationsSkipped ? '' : db
+        ? `<div class="demo-note">${bc.notifications.some(n=>n.delivered===false) ? 'One or more messages above failed to send — check RESEND_API_KEY/TERMII_API_KEY are set (see README) and the recipient details are valid.' : 'Provider acceptance is recorded above; final delivery is not confirmed.'}</div>`
+        : `<div class="demo-note">Demo mode — this preview shows exactly what would be emailed/texted; local demo mode has no backend to dispatch real email or SMS.</div>`}
+    </div>`;
+}
+
+/* ============================== Clients view ============================== */
+function viewClients(){
+  const cards = state.clients.map(c=>{
+    const count = state.parcels.filter(p=>p.senderClientId===c.id).length;
+    return `
+      <div class="card card-pad client-card">
+        <div class="client-avatar">${esc(c.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:13.5px;">${esc(c.name)}</div>
+          <div class="hint">${esc(c.phone)} &middot; ${esc(c.city||'')}</div>
+          <div class="hint" style="margin-top:2px;">${count} parcel${count===1?'':'s'} booked</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button class="btn btn-sm btn-primary" data-use-client="${esc(c.id)}">Use for new parcel</button>
+          <button class="btn btn-sm btn-danger" data-remove-client="${esc(c.id)}">Remove</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Clients &mdash; Frequent Senders</h2><div class="muted">Save a regular sender's details once. Pick them from the list when booking a parcel and only the receiver's details are left to fill in.</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start;">
+      <div class="card card-pad">
+        <div class="section-head"><h2 style="font-size:14px;">Add a client</h2></div>
+        <form id="clientForm">
+          <div class="field"><label>Full name / business name</label><input name="name" required></div>
+          <div class="form-grid">
+            <div class="field"><label>Phone</label><input name="phone" required></div>
+            <div class="field"><label>City</label><input name="city" required></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" type="submit">Save client</button>
+        </form>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${cards || `<div class="card"><div class="empty-state">No clients saved yet. Add a frequent sender on the left to reuse their details next time.</div></div>`}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================== Admin Users (superadmin only) ============================== */
+function viewAdminUsers(){
+  const cards = state.admins.map(a=>{
+    const isMe = currentUser && currentUser.id===a.id;
+    const inactive = a.active===false;
+    return `
+      <div class="card card-pad admin-card" style="${inactive?'opacity:.6;':''}">
+        <div class="admin-avatar">${avatarSVG(a.name, a.staffId, 36)}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:13.5px;">${esc(a.name)}${isMe?' <span class="hint">(you)</span>':''}</div>
+          <div class="hint"><span class="staffid">${esc(a.staffId)}</span> &middot; ${esc(roleLabel(a.role))}${inactive?' &middot; Deactivated':''}</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button class="btn btn-sm" data-view-activity="${esc(a.id)}">Activity</button>
+          <button class="btn btn-sm" data-edit-admin="${esc(a.id)}">Edit</button>
+          <button class="btn btn-sm ${inactive?'':'btn-danger'}" data-toggle-admin="${esc(a.id)}" data-next-active="${inactive}" ${isMe && !inactive?'disabled title="You cannot deactivate your own account while logged in"':''}>${inactive?'Reactivate':'Deactivate'}</button>
+          <button class="btn btn-sm btn-danger" data-delete-admin="${esc(a.id)}" ${isMe?'disabled title="You cannot delete your own account while logged in"':''}>Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  const modal = adminUserModal ? `<div class="overlay" id="adminUserOverlay"><div class="modal" style="max-width:440px;">${renderAdminUserModal(adminUserModal)}</div></div>` : '';
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Admin Users</h2><div class="muted">Create, edit and remove staff logins. Each profile is identified by name and Staff ID Number.</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start;">
+      <div class="card card-pad">
+        <div class="section-head"><h2 style="font-size:14px;">Add an admin</h2></div>
+        <form id="adminUserForm">
+          <div class="field"><label>Full name</label><input name="name" required></div>
+          <div class="field"><label>Staff ID Number</label><input name="staffId" placeholder="e.g. SK-0002" required style="text-transform:uppercase;"></div>
+          <div class="field"><label>Password</label>${pwFieldHtml('<input type="password" name="password" required minlength="12">')}</div>
+          <div class="field"><label>Role</label><select name="role"><option value="staff" selected>Staff</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
+          <button class="btn btn-primary" style="width:100%;" type="submit">Create login</button>
+        </form>
+        <div class="demo-note">${db ? 'Passwords are created as real Supabase Auth logins — never stored in plain text.' : 'Demo authentication — credentials are stored as plain data in the shared workspace and aren\'t production-grade security.'}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${cards || `<div class="card"><div class="empty-state">No admin logins yet.</div></div>`}
+      </div>
+    </div>
+    ${modal}
+  `;
+}
+
+function renderAdminUserModal(id){
+  const a = findAdminById(id);
+  if(!a) return `<button class="modal-close" data-close-admin-user>&times;</button><div class="empty-state">Admin not found.</div>`;
+  return `
+    <button class="modal-close" data-close-admin-user>&times;</button>
+    <div class="section-head"><div><h2 style="font-size:15px;">Edit admin login</h2><div class="muted tn" style="margin-top:2px;">${esc(a.staffId)}</div></div></div>
+    <form id="editAdminForm" data-id="${esc(a.id)}" style="margin-top:10px;">
+      <div class="field"><label>Full name</label><input name="name" value="${esc(a.name)}" required></div>
+      <div class="field"><label>Staff ID Number</label><input name="staffId" value="${esc(a.staffId)}" readonly style="text-transform:uppercase; opacity:.7;"></div>
+      <div class="hint" style="margin-top:-8px; margin-bottom:4px;">Staff ID can't be changed once a login exists — it's tied to how the account signs in. Deactivate and create a new login instead if it was entered wrong.</div>
+      <div class="field"><label>New password</label>${pwFieldHtml('<input type="password" name="password" placeholder="Leave blank to keep current password">')}</div>
+      <div class="field"><label>Role</label><select name="role"><option value="staff" ${a.role==='staff'||!a.role?'selected':''}>Staff</option><option value="admin" ${a.role==='admin'?'selected':''}>Admin</option><option value="superadmin" ${a.role==='superadmin'?'selected':''}>Superadmin</option></select></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;">
+        <button type="button" class="btn btn-sm" data-close-admin-user>Cancel</button>
+        <button class="btn btn-sm btn-primary" type="submit">Save changes</button>
+      </div>
+    </form>
+  `;
+}
+
+/* ============================== Activity Log (superadmin only) ============================== */
+// Every task a logged-in staff/admin performs writes one entry here (see
+// logActivity), so a superadmin can always see exactly who did what and when
+// — logins/logouts, bookings, status changes, client & login management, and
+// deletion requests/approvals all show up on one timeline.
+function viewActivityLog(){
+  let list = state.activityLog.slice().sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+  if(activityFilter.actorId) list = list.filter(l=>l.actorId===activityFilter.actorId);
+  if(activityFilter.q){
+    const q = activityFilter.q.toLowerCase();
+    list = list.filter(l=>
+      (l.summary||'').toLowerCase().includes(q) ||
+      (l.actorName||'').toLowerCase().includes(q) ||
+      (l.actorStaffId||'').toLowerCase().includes(q) ||
+      (l.targetId||'').toLowerCase().includes(q)
+    );
+  }
+  const filterName = activityFilter.actorId ? findAdminById(activityFilter.actorId) : null;
+
+  const staffOpts = state.admins.slice().sort((a,b)=>a.name.localeCompare(b.name))
+    .map(a=>`<option value="${esc(a.id)}" ${activityFilter.actorId===a.id?'selected':''}>${esc(a.name)} (${esc(a.staffId)})</option>`).join('');
+
+  const rows = list.slice(0,250).map(l=>{
+    const clickable = l.targetType==='parcel' && l.targetId;
+    return `
+    <tr class="${clickable?'row-click':''}" ${clickable?`data-activity-goto="${esc(l.targetId)}"`:''}>
+      <td class="hint" style="white-space:nowrap;">${fmtWhen(l.createdAt)}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${avatarSVG(l.actorName||'?', l.actorStaffId||'', 26)}
+          <div style="min-width:0;">
+            <div style="font-weight:600; font-size:12.5px;">${esc(l.actorName||'Unknown')}</div>
+            <div class="hint"><span class="staffid">${esc(l.actorStaffId||'')}</span> &middot; ${esc(roleLabel(l.actorRole))}</div>
+          </div>
+        </div>
+      </td>
+      <td>${esc(l.summary || l.action)}</td>
+      <td>${clickable ? tnHtml(l.targetId) : (l.targetId?esc(l.targetId):'&mdash;')}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Activity Log</h2><div class="muted">Every action performed on the platform, with the exact staff or admin who did it.</div></div>
+    </div>
+    ${filterName ? `<div class="hint" style="margin-bottom:10px;">Showing only ${esc(filterName.name)} (${esc(filterName.staffId)}) &middot; <button type="button" class="link-btn" id="activityClearActor">Clear</button></div>` : ''}
+    <div class="section-head">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="activitySearch" placeholder="Search action, name or tracking #" style="width:250px;" value="${esc(activityFilter.q)}">
+        <select id="activityActor" style="width:220px;"><option value="">All staff</option>${staffOpts}</select>
+      </div>
+      <div class="muted">${list.length} entr${list.length===1?'y':'ies'}${list.length>250?' (showing latest 250)':''}</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Reference</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="4"><div class="empty-state">No activity recorded yet.</div></td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================== Dispatch view ============================== */
+function viewDispatch(){
+  const readyForRider = state.parcels.filter(p=>p.status==='scanned');
+  const outForDelivery = state.parcels.filter(p=>p.status==='out_for_delivery');
+  const riderOpts = state.riders.filter(r=>r.active!==false).map(r=>`<option value="${r.id}">${esc(r.name)} — ${esc(r.vehicle||'')}</option>`).join('');
+
+  // Ready-for-dispatch parcels are grouped by route (sender city -> receiver
+  // city) so that when several parcels share the same route, staff can
+  // select-all-in-route and assign them to one rider in a single action, via
+  // the bulk-assign bar below the table, instead of one at a time. The
+  // existing per-row rider-select + Assign-to-Rider button is untouched for
+  // single-parcel dispatch.
+  const routeGroups = [];
+  const routeIndex = {};
+  readyForRider.forEach(p=>{
+    const key = `${p.sender.city}|${p.receiver.city}`;
+    if(!(key in routeIndex)){ routeIndex[key] = routeGroups.length; routeGroups.push({ key, label:`${p.sender.city} → ${p.receiver.city}`, parcels:[] }); }
+    routeGroups[routeIndex[key]].parcels.push(p);
+  });
+
+  const readyRows = routeGroups.map(g=>{
+    const groupHeader = g.parcels.length>1 ? `
+      <tr class="route-group-header">
+        <td colspan="5" style="background:var(--surface-2);">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-weight:700; color:var(--ink-soft);">
+            <input type="checkbox" data-route-select="${esc(g.key)}">
+            Same route &mdash; ${esc(g.label)}: ${g.parcels.length} parcels can be assigned together below
+          </label>
+        </td>
+      </tr>` : '';
+    const rows = g.parcels.map(p=>`
+      <tr>
+        <td><input type="checkbox" data-bulk-check="${esc(p.trackingNumber)}" data-bulk-route="${esc(g.key)}"></td>
+        <td>${tnHtml(p.trackingNumber)}</td>
+        <td>${esc(p.sender.city)} &rarr; ${esc(p.receiver.city)}</td>
+        <td>${esc(p.receiver.name)}</td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <select style="min-width:170px;" data-rider-select="${esc(p.trackingNumber)}">
+              <option value="">Assign rider&hellip;</option>
+              ${riderOpts}
+            </select>
+            <button class="btn btn-sm btn-primary" data-dispatch="${esc(p.trackingNumber)}">Assign to Rider</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    return groupHeader + rows;
+  }).join('');
+
+  const bulkBar = readyForRider.length ? `
+    <div class="card card-pad" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:22px;">
+      <span class="hint" id="bulkSelCount">0 parcels selected</span>
+      <select id="bulkRiderSelect" style="max-width:230px;">
+        <option value="">Assign selected to rider&hellip;</option>
+        ${riderOpts}
+      </select>
+      <button class="btn btn-sm btn-primary" id="bulkAssignBtn">Assign Selected to Rider</button>
+      <span class="hint">Tick the checkboxes above (or "Same route" to grab a whole group) to dispatch several parcels to one rider at once.</span>
+    </div>` : '';
+
+  const outRows = outForDelivery.map(p=>`
+    <tr>
+      <td>${tnHtml(p.trackingNumber)}</td>
+      <td>${esc(p.receiver.name)}, ${esc(p.receiver.city)}</td>
+      <td>${p.rider ? esc(p.rider.name) : '&mdash;'}</td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm btn-primary" data-deliver="${esc(p.trackingNumber)}">Mark as Delivered</button>
+          <button class="btn btn-sm btn-danger" data-exception="${esc(p.trackingNumber)}">Report Issue</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  // Rider roster: every rider, every package ever assigned to them (a
+  // parcel keeps its rider tag once dispatched, even after it's delivered or
+  // flagged an exception — see advanceStatus), and that package's current
+  // status — so this doubles as "what is this rider carrying right now" and
+  // "what has this rider carried" in one list.
+  const riderCards = state.riders.map(r=>{
+    const packages = state.parcels
+      .filter(p=>p.rider && p.rider.name===r.name)
+      .slice().sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
+    const activeCount = packages.filter(p=>p.status==='out_for_delivery').length;
+    const shown = packages.slice(0, 10);
+    const pkgRows = shown.map(p=>`
+      <tr>
+        <td>${tnHtml(p.trackingNumber)}</td>
+        <td>${esc(p.sender.city)} &rarr; ${esc(p.receiver.city)}</td>
+        <td>${esc(p.receiver.name)}</td>
+        <td>${pill(p.status)}</td>
+      </tr>`).join('');
+    return `
+      <div class="card card-pad" style="margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div class="rider-avatar" style="background:var(--accent); color:var(--accent-ink);">${esc(r.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>
+          <div style="flex:1; min-width:150px;">
+            <div style="font-weight:700; font-size:13.5px;">${esc(r.name)}</div>
+            <div class="hint">${esc(r.vehicle||'')} &middot; ${esc(r.phone||'')}</div>
+          </div>
+          <div class="pill tone-${activeCount?'amber':'neutral'}">${activeCount} out now</div>
+          <div class="hint">${packages.length} package${packages.length===1?'':'s'} total</div>
+        </div>
+        ${packages.length ? `
+        <div class="table-wrap" style="margin-top:12px;">
+          <table>
+            <thead><tr><th>Tracking #</th><th>Route</th><th>Receiver</th><th>Status</th></tr></thead>
+            <tbody>${pkgRows}</tbody>
+          </table>
+        </div>
+        ${packages.length>shown.length?`<div class="hint" style="margin-top:6px;">+${packages.length-shown.length} more not shown</div>`:''}
+        ` : `<div class="hint" style="margin-top:10px;">No packages carried yet.</div>`}
+      </div>`;
+  }).join('');
+
+  const exceptionModal = exceptionTarget ? renderExceptionModal(exceptionTarget) : '';
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Dispatch &mdash; Riders &amp; Delivery</h2><div class="muted">Assign scanned parcels to a rider and confirm deliveries.</div></div>
+    </div>
+
+    <div class="section-head"><h2 style="font-size:14px;">Ready for dispatch</h2></div>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th><input type="checkbox" id="bulkSelectAllVisible" title="Select all"></th><th>Tracking #</th><th>Route</th><th>Receiver</th><th>Assign &amp; dispatch</th></tr></thead>
+        <tbody>${readyRows || `<tr><td colspan="5"><div class="empty-state">No scanned parcels waiting for a rider.</div></td></tr>`}</tbody>
+      </table>
+    </div>
+    ${bulkBar}
+
+    <div class="section-head"><h2 style="font-size:14px;">Out for delivery</h2></div>
+    <div class="table-wrap" style="margin-bottom:22px;">
+      <table>
+        <thead><tr><th>Tracking #</th><th>Receiver</th><th>Rider</th><th>Action</th></tr></thead>
+        <tbody>${outRows || `<tr><td colspan="4"><div class="empty-state">No parcels currently out for delivery.</div></td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div class="section-head"><h2 style="font-size:14px;">Riders &amp; Their Deliveries</h2><div class="muted">Every rider, the packages assigned to them, and each delivery's current status.</div></div>
+    <div style="margin-bottom:16px;">${riderCards || `<div class="card"><div class="empty-state">No riders added yet.</div></div>`}</div>
+    <div class="card card-pad" style="max-width:420px;">
+      <div class="section-head"><h2 style="font-size:13.5px;">Add a rider</h2></div>
+      <form id="riderForm">
+        <div class="form-grid">
+          <div class="field"><label>Name</label><input name="name" required></div>
+          <div class="field"><label>Phone</label><input name="phone" required></div>
+        </div>
+        <div class="field"><label>Vehicle</label><select name="vehicle"><option>Dispatch Bike</option><option>Delivery Van</option><option>Tricycle</option></select></div>
+        <button class="btn btn-primary" type="submit">Add rider</button>
+      </form>
+    </div>
+    ${exceptionModal}
+  `;
+}
+
+/* ============================== Admin view ============================== */
+function viewAdmin(){
+  const total = state.parcels.length;
+  const inTransit = state.parcels.filter(p=>['scanned','out_for_delivery'].includes(p.status)).length;
+  const deliveredToday = state.parcels.filter(p=>{
+    if(p.status!=='delivered') return false;
+    const last = (p.history||[]).slice(-1)[0];
+    if(!last) return false;
+    return lagosDateKey(last.timestamp) === lagosDateKey(new Date());
+  }).length;
+  const exceptions = state.parcels.filter(p=>p.status==='exception').length;
+
+  let list = state.parcels;
+  if(adminFilter.status) list = list.filter(p=>p.status===adminFilter.status);
+  if(adminFilter.q){
+    const q = adminFilter.q.toLowerCase();
+    list = list.filter(p=> p.trackingNumber.toLowerCase().includes(q) || p.receiver.name.toLowerCase().includes(q) || p.sender.name.toLowerCase().includes(q));
+  }
+
+  const rows = list.map(p=>`
+    <tr class="row-click" data-detail="${esc(p.trackingNumber)}">
+      <td>${tnHtml(p.trackingNumber)}</td>
+      <td>${esc(p.sender.city)} &rarr; ${esc(p.receiver.city)}</td>
+      <td>${esc(p.receiver.name)}</td>
+      <td>${esc(p.serviceType)}</td>
+      <td>${pill(p.status)}</td>
+      <td class="hint">${fmtWhen(p.updatedAt)}</td>
+    </tr>`).join('');
+
+  const statusOpts = STATUS_FLOW.concat(['exception']).map(k=>`<option value="${k}" ${adminFilter.status===k?'selected':''}>${esc(STATUS_META[k].label)}</option>`).join('');
+
+  let modal = '';
+  if(adminDetail){
+    const p = findParcel(adminDetail);
+    if(p) modal = `<div class="overlay" id="detailOverlay"><div class="modal">${renderAdminDetail(p)}</div></div>`;
+  }
+  const deleteReqModal = deleteRequestTarget ? `<div class="overlay" id="deleteRequestOverlay"><div class="modal" style="max-width:440px;">${renderDeleteRequestModal(deleteRequestTarget)}</div></div>` : '';
+  const pendingDeletions = state.deletionRequests.filter(r=>r.status==='pending');
+  const deletionPanel = pendingDeletions.length ? renderDeletionRequestsPanel(pendingDeletions) : '';
+
+  return `
+    <div class="section-head" style="margin-top:22px;">
+      <div><h2>Admin &mdash; Overview</h2><div class="muted">Every parcel, its current status, and full history.</div></div>
+    </div>
+    <div class="grid-stats">
+      <div class="stat-tile"><div class="stat-value">${total}</div><div class="stat-label">Total parcels</div></div>
+      <div class="stat-tile"><div class="stat-value">${inTransit}</div><div class="stat-label">In transit</div></div>
+      <div class="stat-tile"><div class="stat-value">${deliveredToday}</div><div class="stat-label">Delivered today</div></div>
+      <div class="stat-tile"><div class="stat-value" style="color:${exceptions?'var(--red)':'inherit'};">${exceptions}</div><div class="stat-label">Exceptions</div></div>
+    </div>
+
+    ${deletionPanel}
+
+    <div class="section-head">
+      <h2 style="font-size:14px;">All parcels</h2>
+      <div style="display:flex; gap:8px;">
+        <input id="adminSearch" placeholder="Search tracking #, sender or receiver" style="width:240px;" value="${esc(adminFilter.q)}">
+        <select id="adminStatus" style="width:190px;"><option value="">All statuses</option>${statusOpts}</select>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-bottom:26px;">
+      <table>
+        <thead><tr><th>Tracking #</th><th>Route</th><th>Receiver</th><th>Service</th><th>Status</th><th>Updated</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6"><div class="empty-state">No parcels match this filter.</div></td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div class="card card-pad" style="max-width:420px;">
+      <div class="section-head"><h2 style="font-size:13.5px;">Company settings</h2></div>
+      <form id="settingsForm">
+        <div class="field"><label>Company name</label><input name="name" value="${esc(state.settings.name)}" required></div>
+        <div class="field"><label>Tagline</label><input name="tagline" value="${esc(state.settings.tagline||'')}"></div>
+        <div class="field"><label>Tracking number prefix</label><input name="prefix" value="${esc(state.settings.prefix)}" maxlength="6" required style="text-transform:uppercase;"></div>
+        <button class="btn btn-primary" type="submit">Save settings</button>
+      </form>
+    </div>
+    ${modal}
+    ${deleteReqModal}
+  `;
+}
+
+function renderDeletionRequestsPanel(list){
+  const canApprove = canApproveDeletions(currentUser);
+  const rows = list.map(r=>`
+    <div class="card card-pad" style="margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+        <div style="min-width:220px;">
+          <div style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13.5px;">${tnHtml(r.trackingNumber)}<span class="pill tone-amber">Pending</span></div>
+          <div class="hint" style="margin-top:4px;">Requested by ${esc(r.requestedBy?r.requestedBy.name:'Unknown')}${r.requestedBy&&r.requestedBy.staffId?` (${esc(r.requestedBy.staffId)})`:''} &middot; ${fmtWhen(r.requestedAt)}</div>
+          <div class="muted" style="margin-top:6px;">${esc(r.reason)}</div>
+        </div>
+        ${canApprove ? `
+        <div style="display:flex; flex-direction:column; gap:6px; min-width:230px;">
+          <input type="text" data-reject-note="${esc(r.id)}" placeholder="Reason if declining (optional)">
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-sm btn-primary" data-approve-deletion="${esc(r.id)}">Approve &amp; delete</button>
+            <button type="button" class="btn btn-sm btn-danger" data-reject-deletion="${esc(r.id)}">Decline</button>
+          </div>
+        </div>` : `<div class="hint" style="align-self:center; white-space:nowrap;">Awaiting admin approval</div>`}
+      </div>
+    </div>`).join('');
+  return `
+    <div class="section-head" style="margin-top:4px;">
+      <h2 style="font-size:14px; color:var(--red);">Deletion requests</h2>
+      <div class="muted">${list.length} pending</div>
+    </div>
+    ${rows}
+  `;
+}
+
+function renderDeleteRequestModal(tn){
+  const p = findParcel(tn);
+  return `
+    <button class="modal-close" data-close-delete-request>&times;</button>
+    <div class="section-head"><div><h2 style="font-size:15px;">Request deletion</h2><div class="muted" style="margin-top:2px;">${tnHtml(tn)}${p?` &middot; ${esc(p.receiver.name)}`:''}</div></div></div>
+    <div class="field" style="margin-top:14px;">
+      <label>Reason for deletion</label>
+      <textarea id="deleteRequestReason" rows="3" placeholder="e.g. Duplicate booking entered by mistake"></textarea>
+    </div>
+    <div class="hint">This sends a request to Admin/Superadmin for approval — the record won't be removed until they approve it.</div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+      <button type="button" class="btn btn-sm" data-close-delete-request>Cancel</button>
+      <button type="button" class="btn btn-sm btn-danger" id="deleteRequestSubmit" data-submit-delete-request="${esc(tn)}">Submit request</button>
+    </div>
+  `;
+}
+
+function renderAdminDetail(p){
+  const chain = getRebookChain(p);
+  const hist = renderHistoryTimeline(combinedHistory(p), p.trackingNumber);
+  const pendingDeletion = state.deletionRequests.find(r=>r.trackingNumber===p.trackingNumber && r.status==='pending');
+  const deletionBlock = pendingDeletion
+    ? `<div class="hint" style="margin-top:10px; color:var(--amber);">Deletion requested by ${esc(pendingDeletion.requestedBy?pendingDeletion.requestedBy.name:'a staff member')} — pending Admin/Superadmin approval.</div>`
+    : `<button type="button" class="btn btn-sm btn-danger" data-request-deletion="${esc(p.trackingNumber)}" style="margin-top:10px;">Request deletion</button>`;
+  return `
+    <button class="modal-close" data-close-detail>&times;</button>
+    <div class="section-head">
+      <div>
+        <div class="route-row">${esc(p.sender.city)}<span class="route-arrow">&rarr;</span>${esc(p.receiver.city)}</div>
+        <div class="muted">${tnHtml(p.trackingNumber)}</div>
+      </div>
+      ${pill(p.status)}
+    </div>
+    <div class="parcel-meta" style="margin-bottom:6px;">
+      <span><b>Sender:</b> ${esc(p.sender.name)} &middot; ${esc(p.sender.phone)}${p.sender.email?` &middot; ${esc(p.sender.email)}`:''}</span>
+    </div>
+    <div class="parcel-meta" style="margin-bottom:6px;">
+      <span><b>Receiver:</b> ${esc(p.receiver.name)} &middot; ${esc(p.receiver.phone)}${p.receiver.email?` &middot; ${esc(p.receiver.email)}`:''}</span>
+    </div>
+    ${p.receiver.address ? `<div class="hint" style="margin-bottom:6px;"><b>Delivery address:</b> ${esc(p.receiver.address)}${p.receiver.landmark?` &middot; near ${esc(p.receiver.landmark)}`:''}</div>` : ''}
+    <div class="parcel-meta">
+      <span><b>Item:</b> ${esc(p.description)}</span>
+      <span><b>Weight:</b> ${esc(p.weightKg)}</span>
+      <span><b>Service:</b> ${esc(p.serviceType)}</span>
+    </div>
+    ${p.rider ? `<div class="rider-card"><div class="rider-avatar">${esc(p.rider.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</div><div><div class="rname">${esc(p.rider.name)}</div><div class="rmeta">${esc(p.rider.phone||'')}</div></div></div>` : ''}
+    ${p.rebookedFrom ? `<div class="hint" style="margin-top:6px;">Re-booked after a delivery exception on ${tnHtml(p.rebookedFrom)}.</div>` : ''}
+    ${p.rebookedTo ? `<div class="hint" style="margin-top:6px;">This parcel was re-booked as ${tnHtml(p.rebookedTo)} after a delivery exception.</div>` : ''}
+    ${p.status==='exception' && !p.rebookedTo ? `<div class="rider-card" style="background:var(--red-soft); border-color:var(--red-line); justify-content:space-between;"><div><div class="rname">Delivery exception</div><div class="rmeta">Re-book to send this delivery back into the warehouse queue under the same tracking number.</div></div><button type="button" class="btn btn-sm btn-primary" data-rebook="${esc(p.trackingNumber)}">Re-book parcel</button></div>` : ''}
+    ${deletionBlock}
+    ${db ? `<button class="btn btn-sm" data-send-tracking="${esc(p.trackingNumber)}" style="margin-top:10px;">Send tracking ID</button>` : ''}
+    ${(p.notifications && p.notifications.length) ? `
+    <div class="section-head" style="margin-top:16px;">
+      <h2 style="font-size:13px;">Tracking ID notifications</h2>
+      <div class="muted" style="font-size:11px;">${p.notifications.length} attempts</div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:6px;">
+      ${p.notifications.map(n=>`<div class="hint">${n.channel==='email'?'Email':'SMS'} &middot; ${esc(n.recipientRole)} &middot; ${esc(n.to)} · ${n.delivered ? 'Accepted' : 'Failed'}${n.subject?` &middot; ${esc(n.subject)}`:''}</div>`).join('')}
+    </div>` : ''}
+    <div class="section-head" style="margin-top:16px;">
+      <h2 style="font-size:13px;">Full history</h2>
+      ${chain.length>1?`<div class="muted" style="font-size:11px;">Includes ${chain.length} linked bookings for this delivery</div>`:''}
+    </div>
+    <div class="timeline">${hist}</div>
+  `;
+}
+
+function renderExceptionModal(tn){
+  const p = findParcel(tn);
+  return `
+    <div class="overlay" id="exceptionOverlay">
+      <div class="modal" style="max-width:440px;">
+        <button class="modal-close" data-close-exception>&times;</button>
+        <div class="section-head"><div><h2 style="font-size:15px;">Report a delivery issue</h2><div class="muted" style="margin-top:2px;">${tnHtml(tn)}${p?` &middot; ${esc(p.receiver.name)}`:''}</div></div></div>
+        <div class="field" style="margin-top:14px;">
+          <label>Reason</label>
+          <select id="exceptionReason">
+            ${EXCEPTION_REASONS.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Additional detail (optional)</label>
+          <textarea id="exceptionNote" rows="3" placeholder="e.g. Tried calling twice, no response since 10am"></textarea>
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;">
+          <button type="button" class="btn btn-sm" data-close-exception>Cancel</button>
+          <button type="button" class="btn btn-sm btn-danger" id="exceptionSubmit" data-submit-exception="${esc(tn)}">Flag as exception</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================== Event binding ============================== */
+function bindView(){
+  document.querySelectorAll('[data-send-tracking]').forEach(btn=>btn.addEventListener('click',async()=>{
+    btn.disabled=true;
+    try{ const result=await callFunction('notify-parcel',{tn:btn.dataset.sendTracking}); bookingConfirm=result; adminDetail=null; currentRole='warehouse'; render(); }
+    catch(error){ toast(error.message || 'Could not send tracking ID'); btn.disabled=false; }
+  }));
+  // Password show/hide toggles (login, admin-user create/edit forms)
+  document.querySelectorAll('[data-toggle-pw]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const wrap = btn.closest('.pw-wrap');
+      const input = wrap ? wrap.querySelector('input') : null;
+      if(!input) return;
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.innerHTML = showing ? EYE_ICON : EYE_OFF_ICON;
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      btn.setAttribute('title', showing ? 'Show password' : 'Hide password');
+    });
+  });
+
+  // Track view
+  const trackBtn = document.getElementById('trackBtn');
+  if(trackBtn){
+    const input = document.getElementById('trackInput');
+    const go = async ()=>{
+      const tn = (input.value||'').trim().toUpperCase();
+      selectedParcel = tn;
+      if(db && !currentUser){
+        trackLookup = { tn, loading:true, parcel:null, notFound:false, error:false };
+        render();
+        try{
+          const res = await fetch(`${FUNCTIONS_BASE}/track?tn=${encodeURIComponent(tn)}`, {
+            headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` },
+          });
+          const data = await res.json().catch(()=>({}));
+          if(res.ok && data.parcel) trackLookup = { tn, loading:false, parcel:data.parcel, notFound:false, error:false };
+          else trackLookup = { tn, loading:false, parcel:null, notFound:true, error:false };
+        }catch(err){
+          console.error(err);
+          trackLookup = { tn, loading:false, parcel:null, notFound:true, error:true };
+        }
+        render();
+        return;
+      }
+      render();
+    };
+    trackBtn.addEventListener('click', go);
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+    document.querySelectorAll('[data-try]').forEach(el=>{
+      el.addEventListener('click', ()=>{ selectedParcel = el.dataset.try; render(); });
+    });
+  }
+
+  // Warehouse: book form
+  const bookForm = document.getElementById('bookForm');
+  if(bookForm){
+    // Keep the in-progress values mirrored in bookDraft so a live data
+    // update elsewhere doesn't erase what's being typed here (see render()).
+    bookForm.addEventListener('input', e=>{
+      if(e.target && e.target.name && (e.target.name in bookDraft)) bookDraft[e.target.name] = e.target.value;
+    });
+    bookForm.addEventListener('change', e=>{
+      if(e.target && e.target.name && (e.target.name in bookDraft)) bookDraft[e.target.name] = e.target.value;
+    });
+    bookForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      // Two submit buttons share this form (see the template above):
+      // "Save Parcel" (data-action="save-only") and "Save & Send Tracking
+      // ID" (data-action="save-and-send"). e.submitter tells us which one
+      // was actually clicked; on an implicit Enter-key submit (no
+      // submitter) we default to sending, matching the old single-button
+      // behavior.
+      const wantsSend = !e.submitter || e.submitter.dataset.action !== 'save-only';
+      const fd = new FormData(bookForm);
+      const payload = {
+        sender:{ name:fd.get('s_name'), phone:fd.get('s_phone'), email:fd.get('s_email')||'', city:fd.get('s_city') },
+        receiver:{
+          name:fd.get('r_name'), phone:fd.get('r_phone'), email:fd.get('r_email')||'',
+          address:fd.get('r_address'), city:fd.get('r_city'), landmark:fd.get('r_landmark')||'',
+        },
+        description:fd.get('desc'), weightKg:fd.get('weight'),
+        serviceType:fd.get('service'),
+        clientId: fd.get('client_id') || null,
+        sendNotification: wantsSend,
+      };
+      const submitBtns = bookForm.querySelectorAll('button[type=submit]');
+      const clickedBtn = e.submitter || submitBtns[submitBtns.length-1];
+      const clickedLabel = clickedBtn.textContent;
+      submitBtns.forEach(b=>b.disabled = true);
+      clickedBtn.textContent = wantsSend ? 'Saving & sending…' : 'Saving…';
+      try{
+        const { tn, notifications, notificationsSkipped } = await createParcel(payload);
+        toast(`Parcel booked: ${tn}`);
+        bookForm.reset();
+        resetBookDraft();
+        currentRole = 'warehouse';
+        bookingConfirm = { tn, notifications, notificationsSkipped: !!notificationsSkipped };
+      }catch(err){ console.error(err); toast(err.message || 'Could not book parcel'); }
+      submitBtns.forEach(b=>b.disabled = false);
+      clickedBtn.textContent = clickedLabel;
+      render();
+    });
+    const clientSelect = document.getElementById('clientSelect');
+    if(clientSelect){
+      clientSelect.addEventListener('change', ()=>{
+        if(clientSelect.value) applyClient(clientSelect.value);
+        else clearSenderFields();
+      });
+    }
+    const saveSenderBtn = document.getElementById('saveSenderBtn');
+    if(saveSenderBtn){
+      saveSenderBtn.addEventListener('click', async ()=>{
+        const name = bookForm.s_name.value.trim();
+        const phone = bookForm.s_phone.value.trim();
+        const email = bookForm.s_email ? bookForm.s_email.value.trim() : '';
+        const city = bookForm.s_city.value.trim();
+        if(!name || !phone || !city){ toast('Fill in the sender\'s name, phone and city first'); return; }
+        const dupe = state.clients.find(c=> c.name.toLowerCase()===name.toLowerCase() && c.phone===phone);
+        if(dupe){ toast(`${name} is already a saved frequent sender`); return; }
+        saveSenderBtn.disabled = true;
+        try{
+          await addClient({ name, phone, email, city, createdAt:new Date().toISOString() });
+          toast(`Saved ${name} as a frequent sender`);
+        }catch(err){ console.error(err); toast('Could not save sender'); saveSenderBtn.disabled = false; }
+      });
+    }
+  }
+  document.querySelectorAll('[data-close-booking-confirm]').forEach(b=>{
+    b.addEventListener('click', ()=>{ bookingConfirm = null; render(); });
+  });
+
+  // Clients
+  const clientForm = document.getElementById('clientForm');
+  if(clientForm){
+    clientForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(clientForm);
+      const data = { name:fd.get('name'), phone:fd.get('phone'), city:fd.get('city'), createdAt:new Date().toISOString() };
+      await addClient(data);
+      toast(`Client saved: ${data.name}`);
+      clientForm.reset();
+    });
+  }
+  document.querySelectorAll('[data-use-client]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentRole = 'warehouse';
+      document.querySelectorAll('#roleNav button').forEach(b=>b.classList.toggle('active', b.dataset.role==='warehouse'));
+      render();
+      applyClient(btn.dataset.useClient);
+    });
+  });
+  document.querySelectorAll('[data-remove-client]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm('Remove this client? Parcels already booked under them are unaffected.')) return;
+      await deleteClient(btn.dataset.removeClient);
+      toast('Client removed');
+    });
+  });
+  document.querySelectorAll('[data-receive-instore]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const tn = btn.dataset.receiveInstore;
+      btn.disabled = true;
+      try{ await receiveInStore(tn); toast(`${tn} marked Received In-Store — ready for dispatch`); }
+      catch(err){ console.error(err); toast('Could not update parcel'); btn.disabled = false; }
+    });
+  });
+
+  // Dispatch
+  document.querySelectorAll('[data-dispatch]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const tn = btn.dataset.dispatch;
+      const sel = document.querySelector(`[data-rider-select="${CSS.escape(tn)}"]`);
+      const riderId = sel ? sel.value : '';
+      if(!riderId){ toast('Choose a rider first'); return; }
+      const rider = state.riders.find(r=>r.id===riderId);
+      btn.disabled = true;
+      await advanceStatus(tn, 'out_for_delivery', { location:(rider?rider.vehicle:'')+' en route', actor:'Dispatch', note:`Rider: ${rider?rider.name:''}`, riderId, rider:{ name:rider?rider.name:'', phone:rider?rider.phone:'' } });
+      toast(`${tn} dispatched with ${rider?rider.name:'rider'}`);
+    });
+  });
+
+  // Bulk-assign: dispatch several selected parcels — typically all sharing
+  // the same route via the "Same route" group checkbox — to one rider in a
+  // single action, instead of assigning them one at a time.
+  const updateBulkSelCount = ()=>{
+    const countEl = document.getElementById('bulkSelCount');
+    if(!countEl) return;
+    const n = document.querySelectorAll('[data-bulk-check]:checked').length;
+    countEl.textContent = `${n} parcel${n===1?'':'s'} selected`;
+  };
+  document.querySelectorAll('[data-route-select]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const key = cb.dataset.routeSelect;
+      document.querySelectorAll(`[data-bulk-check][data-bulk-route="${CSS.escape(key)}"]`).forEach(c=>{ c.checked = cb.checked; });
+      updateBulkSelCount();
+    });
+  });
+  document.querySelectorAll('[data-bulk-check]').forEach(cb=>{
+    cb.addEventListener('change', updateBulkSelCount);
+  });
+  const bulkSelectAllVisible = document.getElementById('bulkSelectAllVisible');
+  if(bulkSelectAllVisible){
+    bulkSelectAllVisible.addEventListener('change', ()=>{
+      document.querySelectorAll('[data-bulk-check]').forEach(c=>{ c.checked = bulkSelectAllVisible.checked; });
+      document.querySelectorAll('[data-route-select]').forEach(c=>{ c.checked = bulkSelectAllVisible.checked; });
+      updateBulkSelCount();
+    });
+  }
+  const bulkAssignBtn = document.getElementById('bulkAssignBtn');
+  if(bulkAssignBtn){
+    bulkAssignBtn.addEventListener('click', async ()=>{
+      const tns = Array.from(document.querySelectorAll('[data-bulk-check]:checked')).map(c=>c.dataset.bulkCheck);
+      const riderSel = document.getElementById('bulkRiderSelect');
+      const riderId = riderSel ? riderSel.value : '';
+      if(!tns.length){ toast('Select at least one parcel to assign'); return; }
+      if(!riderId){ toast('Choose a rider first'); return; }
+      const rider = state.riders.find(r=>r.id===riderId);
+      bulkAssignBtn.disabled = true;
+      try{
+        for(const tn of tns){
+          await advanceStatus(tn, 'out_for_delivery', { location:(rider?rider.vehicle:'')+' en route', actor:'Dispatch', note:`Rider: ${rider?rider.name:''}`, riderId, rider:{ name:rider?rider.name:'', phone:rider?rider.phone:'' } });
+        }
+        toast(`${tns.length} parcel${tns.length===1?'':'s'} dispatched with ${rider?rider.name:'rider'}`);
+      }catch(err){ console.error(err); toast('Could not dispatch selected parcels'); bulkAssignBtn.disabled = false; }
+    });
+  }
+  document.querySelectorAll('[data-deliver]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const tn = btn.dataset.deliver;
+      const p = findParcel(tn);
+      btn.disabled = true;
+      await advanceStatus(tn, 'delivered', { location:p?p.receiver.city:'', actor:'Dispatch', note:'Confirmed by recipient' });
+      toast(`${tn} marked delivered`);
+    });
+  });
+  document.querySelectorAll('[data-exception]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      exceptionTarget = btn.dataset.exception;
+      render();
+    });
+  });
+  // Report-issue modal
+  const exceptionOverlay = document.getElementById('exceptionOverlay');
+  if(exceptionOverlay){
+    const closeException = ()=>{ exceptionTarget = null; render(); };
+    document.querySelectorAll('[data-close-exception]').forEach(b=>b.addEventListener('click', closeException));
+    exceptionOverlay.addEventListener('click', e=>{ if(e.target===exceptionOverlay) closeException(); });
+    const submitBtn = document.getElementById('exceptionSubmit');
+    if(submitBtn){
+      submitBtn.addEventListener('click', async ()=>{
+        const tn = submitBtn.dataset.submitException;
+        const reasonEl = document.getElementById('exceptionReason');
+        const noteEl = document.getElementById('exceptionNote');
+        const reason = reasonEl ? reasonEl.value : 'Delivery issue reported';
+        const extra = noteEl && noteEl.value.trim() ? ` — ${noteEl.value.trim()}` : '';
+        submitBtn.disabled = true; submitBtn.textContent = 'Flagging…';
+        try{
+          await advanceStatus(tn, 'exception', { location:'', actor:'Dispatch', note: reason + extra });
+          exceptionTarget = null;
+          render();
+          toast(`${tn} flagged as exception`);
+          const flaggedParcel = findParcel(tn);
+          notifyRole(['admin','superadmin'], {
+            title:'Delivery exception reported',
+            body:`${tn}${flaggedParcel?` (${flaggedParcel.receiver.name})`:''} was flagged: ${reason}`,
+            kind:'exception', refType:'parcel', refId:tn,
+          });
+        }catch(err){ console.error(err); toast('Could not flag parcel'); submitBtn.disabled = false; submitBtn.textContent = 'Flag as exception'; }
+      });
+    }
+  }
+  const riderForm = document.getElementById('riderForm');
+  if(riderForm){
+    riderForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(riderForm);
+      await addRider({ name:fd.get('name'), phone:fd.get('phone'), vehicle:fd.get('vehicle'), active:true });
+      toast('Rider added');
+      riderForm.reset();
+    });
+  }
+
+  // Admin
+  const aSearch = document.getElementById('adminSearch');
+  const aStatus = document.getElementById('adminStatus');
+  if(aSearch) aSearch.addEventListener('input', ()=>{ adminFilter.q = aSearch.value; render(); aSearch2Focus(); });
+  if(aStatus) aStatus.addEventListener('change', ()=>{ adminFilter.status = aStatus.value; render(); });
+  document.querySelectorAll('[data-detail]').forEach(tr=>{
+    tr.addEventListener('click', ()=>{ adminDetail = tr.dataset.detail; render(); });
+  });
+  const closeBtn = document.querySelector('[data-close-detail]');
+  if(closeBtn) closeBtn.addEventListener('click', ()=>{ adminDetail = null; render(); });
+  const overlay = document.getElementById('detailOverlay');
+  if(overlay) overlay.addEventListener('click', (e)=>{ if(e.target===overlay){ adminDetail = null; render(); } });
+  const rebookBtn = document.querySelector('[data-rebook]');
+  if(rebookBtn){
+    rebookBtn.addEventListener('click', async ()=>{
+      rebookBtn.disabled = true; rebookBtn.textContent = 'Re-booking…';
+      try{ await rebookParcel(rebookBtn.dataset.rebook); }
+      catch(err){ console.error(err); toast('Could not re-book parcel'); rebookBtn.disabled = false; rebookBtn.textContent = 'Re-book parcel'; }
+    });
+  }
+
+  // Parcel-deletion requests: any logged-in role can request; only Admin /
+  // Superadmin can approve (deletes for real) or decline.
+  document.querySelectorAll('[data-request-deletion]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ deleteRequestTarget = btn.dataset.requestDeletion; render(); });
+  });
+  const deleteReqOverlay = document.getElementById('deleteRequestOverlay');
+  if(deleteReqOverlay){
+    const closeDeleteReq = ()=>{ deleteRequestTarget = null; render(); };
+    document.querySelectorAll('[data-close-delete-request]').forEach(b=>b.addEventListener('click', closeDeleteReq));
+    deleteReqOverlay.addEventListener('click', e=>{ if(e.target===deleteReqOverlay) closeDeleteReq(); });
+    const submitDelReq = document.getElementById('deleteRequestSubmit');
+    if(submitDelReq){
+      submitDelReq.addEventListener('click', async ()=>{
+        const tn = submitDelReq.dataset.submitDeleteRequest;
+        const reasonEl = document.getElementById('deleteRequestReason');
+        const reason = reasonEl ? reasonEl.value.trim() : '';
+        if(!reason){ toast('Please describe the reason for deletion'); return; }
+        submitDelReq.disabled = true; submitDelReq.textContent = 'Submitting…';
+        try{
+          await requestParcelDeletion(tn, reason);
+          deleteRequestTarget = null;
+          render();
+          toast('Deletion request sent for approval');
+        }catch(err){ console.error(err); toast('Could not submit request'); submitDelReq.disabled = false; submitDelReq.textContent = 'Submit request'; }
+      });
+    }
+  }
+  document.querySelectorAll('[data-approve-deletion]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.approveDeletion;
+      const req = state.deletionRequests.find(r=>r.id===id);
+      if(!req) return;
+      if(!confirm(`Permanently delete parcel ${req.trackingNumber}? This cannot be undone.`)) return;
+      btn.disabled = true;
+      try{ await resolveDeletionRequest(id, 'approved', ''); toast(`${req.trackingNumber} deleted`); render(); }
+      catch(err){ console.error(err); toast('Could not delete parcel'); btn.disabled = false; }
+    });
+  });
+  document.querySelectorAll('[data-reject-deletion]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.rejectDeletion;
+      const noteInput = document.querySelector(`[data-reject-note="${CSS.escape(id)}"]`);
+      const note = noteInput ? noteInput.value.trim() : '';
+      btn.disabled = true;
+      try{ await resolveDeletionRequest(id, 'rejected', note); toast('Deletion request declined'); render(); }
+      catch(err){ console.error(err); toast('Could not update request'); btn.disabled = false; }
+    });
+  });
+
+  const settingsForm = document.getElementById('settingsForm');
+  if(settingsForm){
+    settingsForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(settingsForm);
+      await saveSettings({ name:fd.get('name'), tagline:fd.get('tagline'), prefix:(fd.get('prefix')||'TRK').toUpperCase() });
+      toast('Settings saved');
+    });
+  }
+
+  // Staff login
+  const loginForm = document.getElementById('loginForm');
+  if(loginForm){
+    loginForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(loginForm);
+      const staffId = (fd.get('staffId')||'').trim().toUpperCase();
+      const password = fd.get('password')||'';
+      const btn = loginForm.querySelector('button[type=submit]');
+
+      if(!db){
+        // Local demo mode — no backend configured, fall back to the
+        // plaintext check against the seeded in-memory admins.
+        const found = state.admins.find(a=> (a.staffId||'').toUpperCase()===staffId && a.password===password);
+        if(!found){ loginError = 'Staff ID or password not recognized.'; render(); return; }
+        if(found.active===false){ loginError = 'This login has been deactivated. See a superadmin.'; render(); return; }
+        currentUser = { id:found.id, name:found.name, staffId:found.staffId, role:found.role };
+        loginError = '';
+        try{ localStorage.setItem('stk_admin_session', found.id); }catch(e){}
+        render();
+        toast(`Welcome, ${found.name}`);
+        logActivity('login', { summary:`${found.name} logged in` });
+        return;
+      }
+
+      // Real backend — the Staff ID / password form stays the same, but
+      // it's now a real Supabase Auth sign-in under the hood (staffId maps
+      // to a synthetic "<staffid>@staff.stallionking.internal" email).
+      if(btn) btn.disabled = true;
+      const email = staffId.toLowerCase()+'@staff.stallionking.internal';
+      const { data, error } = await db._client.auth.signInWithPassword({ email, password });
+      if(error || !data.session){
+        loginError = 'Staff ID or password not recognized.';
+        if(btn) btn.disabled = false;
+        render();
+        return;
+      }
+      const { data:profileRow } = await db._client.from('profiles').select('admin_doc_id').eq('user_id', data.user.id).maybeSingle();
+      const { data:adminRow } = profileRow
+        ? await db._client.from('admins').select('id, data').eq('id', profileRow.admin_doc_id).maybeSingle()
+        : { data:null };
+      if(!adminRow || adminRow.data.active===false){
+        await db._client.auth.signOut();
+        loginError = adminRow ? 'This login has been deactivated. See a superadmin.' : 'Staff ID or password not recognized.';
+        if(btn) btn.disabled = false;
+        render();
+        return;
+      }
+      currentUser = { id:adminRow.id, name:adminRow.data.name, staffId:adminRow.data.staffId, role:adminRow.data.role };
+      loginError = '';
+      subscribe();
+      render();
+      toast(`Welcome, ${adminRow.data.name}`);
+      logActivity('login', { summary:`${adminRow.data.name} logged in` });
+    });
+  }
+
+  // Admin Users (superadmin) — create
+  const adminUserForm = document.getElementById('adminUserForm');
+  if(adminUserForm){
+    adminUserForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(adminUserForm);
+      const staffId = (fd.get('staffId')||'').trim().toUpperCase();
+      const name = (fd.get('name')||'').trim();
+      const password = fd.get('password')||'';
+      const role = parseRoleField(fd.get('role'));
+      if(state.admins.some(a=>(a.staffId||'').toUpperCase()===staffId)){ toast(`Staff ID ${staffId} is already in use`); return; }
+      const btn = adminUserForm.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try{
+        if(db){
+          // Real backend: creates a real Supabase Auth user for the
+          // password (see supabase/functions/create-staff) instead of
+          // storing it in plaintext.
+          await callFunction('create-staff', { name, staffId, password, role });
+        } else {
+          await addAdmin({ name, staffId, password, role, active:true, createdAt:new Date().toISOString() });
+        }
+        toast(`Login created for ${name}`);
+        adminUserForm.reset();
+        logActivity('admin_created', { summary:`Created a new login for ${name} (${staffId}) — role: ${roleLabel(role)}`, targetType:'admin', targetId:staffId });
+      }catch(err){ console.error(err); toast(err.message || 'Could not create login'); }
+      btn.disabled = false;
+    });
+  }
+  document.querySelectorAll('[data-view-activity]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activityFilter = { q:'', actorId: btn.dataset.viewActivity };
+      currentRole = 'activity';
+      render();
+    });
+  });
+  document.querySelectorAll('[data-edit-admin]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ adminUserModal = btn.dataset.editAdmin; render(); });
+  });
+  document.querySelectorAll('[data-toggle-admin]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.toggleAdmin;
+      const makeActive = btn.dataset.nextActive === 'true';
+      const a = findAdminById(id);
+      if(!makeActive && a && a.role==='superadmin' && activeSuperadminCount(id)===0){
+        toast('At least one active superadmin login is required'); return;
+      }
+      btn.disabled = true;
+      try{
+        await updateAdmin(id, { active: makeActive });
+        toast(makeActive?'Login reactivated':'Login deactivated');
+        logActivity(makeActive?'admin_reactivated':'admin_deactivated', { summary:`${makeActive?'Reactivated':'Deactivated'} the login for ${a?a.name:id}${a?` (${a.staffId})`:''}`, targetType:'admin', targetId: a?a.staffId:id });
+      }
+      catch(err){ console.error(err); toast('Could not update login'); btn.disabled = false; }
+    });
+  });
+  document.querySelectorAll('[data-delete-admin]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.deleteAdmin;
+      const a = findAdminById(id);
+      if(a && a.role==='superadmin' && activeSuperadminCount(id)===0){
+        toast('At least one active superadmin login is required'); return;
+      }
+      if(!confirm(`Delete the login for ${a?a.name:'this admin'}? This cannot be undone.`)) return;
+      try{
+        await deleteAdmin(id);
+        toast('Login deleted');
+        logActivity('admin_deleted', { summary:`Deleted the login for ${a?a.name:id}${a?` (${a.staffId})`:''}`, targetType:'admin', targetId: a?a.staffId:id });
+      }
+      catch(err){ console.error(err); toast('Could not delete login'); }
+    });
+  });
+  const closeAdminUser = ()=>{ adminUserModal = null; render(); };
+  document.querySelectorAll('[data-close-admin-user]').forEach(b=>b.addEventListener('click', closeAdminUser));
+  const adminUserOverlay = document.getElementById('adminUserOverlay');
+  if(adminUserOverlay) adminUserOverlay.addEventListener('click', e=>{ if(e.target===adminUserOverlay) closeAdminUser(); });
+  const editAdminForm = document.getElementById('editAdminForm');
+  if(editAdminForm){
+    editAdminForm.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const id = editAdminForm.dataset.id;
+      const fd = new FormData(editAdminForm);
+      const staffId = (fd.get('staffId')||'').trim().toUpperCase(); // read-only field — sent back unchanged
+      const name = (fd.get('name')||'').trim();
+      const password = fd.get('password')||'';
+      const role = parseRoleField(fd.get('role'));
+      const current = findAdminById(id);
+      if(current && current.role==='superadmin' && role!=='superadmin' && activeSuperadminCount(id)===0){
+        toast('At least one active superadmin login is required'); return;
+      }
+      const btn = editAdminForm.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try{
+        if(db){
+          // Password and role changes go through update-staff — the
+          // password touches Supabase Auth, and the role has to stay in
+          // sync with profiles.role, which is what the edge functions and
+          // RLS policies actually check server-side.
+          if(password || (current && role!==current.role)){
+            await callFunction('update-staff', { staffId, newPassword: password || undefined, role });
+          }
+          if(!current || name !== current.name){
+            await updateAdmin(id, { name });
+          }
+        } else {
+          const patch = { name, staffId, role };
+          if(password) patch.password = password;
+          await updateAdmin(id, patch);
+        }
+        toast('Login updated');
+        logActivity('admin_updated', { summary:`Updated the login for ${name} (${staffId})`, targetType:'admin', targetId:staffId });
+        adminUserModal = null;
+        render();
+      }catch(err){ console.error(err); toast(err.message || 'Could not update login'); btn.disabled = false; }
+    });
+  }
+
+  // Activity Log (superadmin only)
+  const actSearch = document.getElementById('activitySearch');
+  const actActor = document.getElementById('activityActor');
+  if(actSearch) actSearch.addEventListener('input', ()=>{ activityFilter.q = actSearch.value; render(); actSearchFocus(); });
+  if(actActor) actActor.addEventListener('change', ()=>{ activityFilter.actorId = actActor.value; render(); });
+  const activityClearActorBtn = document.getElementById('activityClearActor');
+  if(activityClearActorBtn) activityClearActorBtn.addEventListener('click', ()=>{ activityFilter.actorId = ''; render(); });
+  document.querySelectorAll('[data-activity-goto]').forEach(tr=>{
+    tr.addEventListener('click', ()=>{ currentRole = 'admin'; adminDetail = tr.dataset.activityGoto; render(); });
+  });
+}
+function aSearch2Focus(){
+  const el = document.getElementById('adminSearch');
+  if(el){ el.focus(); const v = el.value; el.value=''; el.value=v; }
+}
+function actSearchFocus(){
+  const el = document.getElementById('activitySearch');
+  if(el){ el.focus(); const v = el.value; el.value=''; el.value=v; }
+}
+</script>
+</body>
+</html>
