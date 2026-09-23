@@ -1,23 +1,4 @@
-// Authenticated endpoint: POST /book-parcel
-// Body: { sender, receiver, description, weightKg, serviceType, clientId?, sendNotification? }
-//
-// Replaces the frontend's old composeTrackingNotifications(), which only
-// *composed* email/SMS text locally (a published Artifact page has no way
-// to actually send anything). This function does the real work server
-// side, where the Resend/Termii API keys live as secrets:
-//   1. generates the tracking number and writes the parcel doc
-//   2. if sendNotification is not explicitly false, sends a real email (if
-//      an email was given) and/or real SMS (if a phone was given) to
-//      sender and receiver — the booking form has two buttons ("Save
-//      Parcel" vs "Save & Send Tracking ID") that map to this flag, so
-//      staff can book without notifying yet and send later some other way
-//   3. records what was sent (if anything) in the notifications
-//      collection, exactly like the old client-side version did, so the
-//      rest of the app (the booking-confirmation panel, the Admin detail
-//      view) doesn't change
-//
-// Requires a logged-in staff session (booking has always been a staff-only
-// action in this app — customers don't book their own parcels).
+// Authenticated parcel booking with optional tracking email notifications.
 import { supabaseAdmin, callerProfile } from "../_shared/supabaseAdmin.ts";
 import { notifyParcel } from "../_shared/notifyParcel.ts";
 import { corsHeaders, handleOptions, json } from "../_shared/cors.ts";
@@ -129,7 +110,7 @@ Deno.serve(async (req) => {
       data: {
         action: "tracking_notified",
         actorId: caller.admin_doc_id, actorStaffId:caller.staff_id, actorRole:caller.role, actorName:caller.staff_id,
-        summary: `Attempted tracking ID ${tn} to ${notifications.length} recipient${notifications.length === 1 ? "" : "s"} by email/SMS`,
+        summary: `Attempted tracking ID ${tn} to ${notifications.length} recipient${notifications.length === 1 ? "" : "s"} by email`,
         targetType: "parcel",
         targetId: tn,
         actor: caller.staff_id,

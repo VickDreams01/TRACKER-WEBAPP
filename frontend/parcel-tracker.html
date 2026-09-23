@@ -266,7 +266,7 @@
 <!--
   Real backend: Supabase (Postgres + Auth + Realtime + Edge Functions).
   See ../README.md for how to create the project, run the migration, set
-  the RESEND_API_KEY/TERMII_API_KEY secrets, and deploy the functions.
+  the RESEND_API_KEY/RESEND_FROM secrets, and deploy the functions.
 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-adapter.js"></script>
@@ -287,7 +287,7 @@ function backendConfigured(){
 // Calls a Supabase Edge Function, attaching the signed-in staff member's
 // session token so the function can authorize the request server-side
 // (see supabase/functions/*/index.ts). Used for anything that must run
-// with the service role key — booking (real email/SMS), and staff-login
+// with the service role key — booking (real email), and staff-login
 // management — never done directly from the browser.
 async function callFunction(name, body){
   let accessToken = '';
@@ -445,7 +445,7 @@ let adminDetail = null; // tracking number currently open in the Admin detail mo
 let adminFilter = { q:'', status:'' };
 let exceptionTarget = null; // tracking number currently open in the Report Issue modal
 let deleteRequestTarget = null; // tracking number currently open in the Request Deletion modal
-let bookingConfirm = null; // { tn, notifications } — shown right after a parcel is booked, previewing the curated tracking-ID email/SMS just "sent"
+let bookingConfirm = null; // { tn, notifications } — shown right after a parcel is booked, previewing the curated tracking-ID email just "sent"
 let activityFilter = { q:'', actorId:'' }; // Activity Log filters (superadmin-only view)
 let notifPanelOpen = false; // notifications dropdown, top right
 let profilePanelOpen = false; // profile dropdown, top right
@@ -1072,9 +1072,9 @@ function subscribe(){
 }
 
 // Builds the curated tracking-ID messages for whichever contact details were
-// captured at booking (sender and/or receiver email/phone). A page published
+// captured at booking (sender and/or receiver email). A page published
 // this way has no backend or outbound network path to actually dispatch real
-// email/SMS, so this composes the exact message content that would be sent
+// email, so this composes the exact message content that would be sent
 // and records it on the parcel — shown to staff as a "sent" confirmation
 // right after booking, and kept on the parcel's Admin detail for the record.
 function composeTrackingNotifications(doc){
@@ -1094,12 +1094,7 @@ function composeTrackingNotifications(doc){
         body:`Hi ${c.name}, your parcel with ${company} has been booked. Tracking number: ${doc.trackingNumber}. Route: ${route}. Track it anytime on our Track a Parcel page using this number. Thank you for shipping with us.`,
       });
     }
-    if(c.phone){
-      notifications.push({
-        channel:'sms', recipientRole:c.role, to:c.phone, sentAt:now,
-        body:`${company}: Your tracking No. is ${doc.trackingNumber}. Track it anytime on our website using this number. Thank you!`,
-      });
-    }
+
   });
   return notifications;
 }
@@ -1108,8 +1103,8 @@ function composeTrackingNotifications(doc){
 async function createParcel(payload){
   if(db){
     // Real backend: the tracking number, the parcel doc, AND the actual
-    // email/SMS notifications are all generated server-side (see
-    // supabase/functions/book-parcel) — the Resend/Termii API keys used to
+    // email notifications are all generated server-side (see
+    // supabase/functions/book-parcel) — the Resend API keys used to
     // send them can only live there, never in this browser-facing file.
     // The function also writes its own activity-log entries, so there's
     // nothing left to log client-side here.
@@ -1153,7 +1148,7 @@ async function createParcel(payload){
   state.parcels.unshift(doc); render();
   logActivity('parcel_booked', { summary:`Booked parcel ${tn} for ${payload.receiver.name}`, targetType:'parcel', targetId:tn });
   if(doc.notifications.length){
-    logActivity('tracking_notified', { summary:`Sent tracking ID ${tn} to ${doc.notifications.length} recipient${doc.notifications.length===1?'':'s'} by email/SMS`, targetType:'parcel', targetId:tn });
+    logActivity('tracking_notified', { summary:`Sent tracking ID ${tn} to ${doc.notifications.length} recipient${doc.notifications.length===1?'':'s'} by email`, targetType:'parcel', targetId:tn });
   }
   return { tn, notifications: doc.notifications, notificationsSkipped: !wantsSend };
 }
@@ -1380,7 +1375,7 @@ function viewTrack(){
   return `
     <div class="track-hero">
       <h1>Track your parcel</h1>
-      <div class="muted">Enter the tracking number from your receipt or SMS to see live status.</div>
+      <div class="muted">Enter the tracking number from your receipt or email to see live status.</div>
       <div class="search-row">
         <input id="trackInput" placeholder="e.g. ${esc(state.settings.prefix||'STK')}-7F3K92XQ" value="${selectedParcel?esc(selectedParcel):''}" autocomplete="off">
         <button class="btn btn-primary" id="trackBtn">Track</button>
@@ -1540,7 +1535,7 @@ function viewWarehouse(){
               <div class="field"><label>City</label><input name="s_city" required value="${esc(bookDraft.s_city)}"></div>
             </div>
             <div class="field"><label>Email (optional)</label><input type="email" name="s_email" placeholder="for tracking ID by email" value="${esc(bookDraft.s_email)}"></div>
-            <div class="hint" style="margin-top:-8px; margin-bottom:12px;">The tracking ID is sent to whichever sender/receiver email and phone are on file.</div>
+            <div class="hint" style="margin-top:-8px; margin-bottom:12px;">The tracking ID is sent to the sender and receiver email addresses on file.</div>
             <button type="button" class="btn btn-sm" id="saveSenderBtn" style="margin-top:2px;">+ Save as frequent sender</button>
           </fieldset>
           <fieldset>
@@ -1583,7 +1578,7 @@ function viewWarehouse(){
             <button class="btn btn-primary" style="flex:1.4;" type="submit" data-action="save-and-send">Save &amp; Send Tracking ID</button>
             <button class="btn" style="flex:1;" type="submit" data-action="save-only">Save Parcel</button>
           </div>
-          <div class="hint" style="margin-top:8px;">"Save &amp; Send" emails/texts the tracking ID right away to whichever sender/receiver email and phone are on file. "Save Parcel" books it and generates the tracking number without notifying anyone yet.</div>
+          <div class="hint" style="margin-top:8px;">"Save &amp; Send" emails the tracking ID right away to the sender and receiver email addresses on file. "Save Parcel" books it and generates the tracking number without notifying anyone yet.</div>
         </form>
       </div>
       <div>
@@ -1601,7 +1596,7 @@ function viewWarehouse(){
   `;
 }
 
-// Preview of the curated tracking-ID email/SMS just "sent" to whichever
+// Preview of the curated tracking-ID email just "sent" to whichever
 // sender/receiver contact details were on the booking (see
 // composeTrackingNotifications) — shown right after a parcel is booked, as
 // an inline dismissible panel (not a blocking overlay) so staff can keep
@@ -1611,9 +1606,10 @@ function renderBookingConfirmModal(bc){
   const items = bc.notifications.map(n=>`
     <div class="card card-pad" style="margin-bottom:8px;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-        <div style="font-weight:700; font-size:12.5px;">${n.channel==='email'?'Email':'SMS'} to ${esc(n.recipientRole)}</div>
+        <div style="font-weight:700; font-size:12.5px;">${esc(n.channel==='email'?'Email':n.channel || 'Notification')} to ${esc(n.recipientRole)}</div>
         <div class="hint">${esc(n.to)} · ${db ? (n.delivered ? 'Accepted by provider' : 'Failed to send') : 'Demo preview'}</div>
       </div>
+      ${n.error ? `<div class="hint" style="color:var(--red); margin-top:6px;">${esc(n.error)}</div>` : ''}
       ${n.subject ? `<div style="font-weight:600; font-size:12.5px; margin-top:6px;">${esc(n.subject)}</div>` : ''}
       <div class="hint" style="margin-top:4px; white-space:pre-wrap;">${esc(n.body)}</div>
     </div>`).join('');
@@ -1625,11 +1621,11 @@ function renderBookingConfirmModal(bc){
         <div class="hint" style="margin:10px 0 8px;">Tracking notification results:</div>
         ${items}
       ` : bc.notificationsSkipped
-        ? `<div class="hint" style="margin:10px 0;">Saved without notifying — "Save Parcel" was used, so no email or SMS was sent for this booking.</div>`
-        : `<div class="hint" style="margin:10px 0;">No email or phone was provided for the sender or receiver, so no tracking notification was sent.</div>`}
-      ${bc.notificationsSkipped ? '' : db
-        ? `<div class="demo-note">${bc.notifications.some(n=>n.delivered===false) ? 'One or more messages above failed to send — check RESEND_API_KEY/TERMII_API_KEY are set (see README) and the recipient details are valid.' : 'Provider acceptance is recorded above; final delivery is not confirmed.'}</div>`
-        : `<div class="demo-note">Demo mode — this preview shows exactly what would be emailed/texted; local demo mode has no backend to dispatch real email or SMS.</div>`}
+        ? `<div class="hint" style="margin:10px 0;">Saved without notifying — "Save Parcel" was used, so no email was sent for this booking.</div>`
+        : `<div class="hint" style="margin:10px 0;">No email address was provided for the sender or receiver, so no tracking notification was sent.</div>`}
+      ${bc.notificationsSkipped || !bc.notifications.length ? '' : db
+        ? `<div class="demo-note">${bc.notifications.some(n=>n.delivered===false) ? 'One or more emails failed. Review the reason above. For older attempts without a reason, check Supabase email secrets and Resend logs.' : 'Provider acceptance is recorded above; final delivery is not confirmed.'}</div>`
+        : `<div class="demo-note">Demo mode — this preview shows exactly what would be emailed; local demo mode has no backend to dispatch real email.</div>`}
     </div>`;
 }
 
@@ -2126,7 +2122,7 @@ function renderAdminDetail(p){
       <div class="muted" style="font-size:11px;">${p.notifications.length} attempts</div>
     </div>
     <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:6px;">
-      ${p.notifications.map(n=>`<div class="hint">${n.channel==='email'?'Email':'SMS'} &middot; ${esc(n.recipientRole)} &middot; ${esc(n.to)} · ${n.delivered ? 'Accepted' : 'Failed'}${n.subject?` &middot; ${esc(n.subject)}`:''}</div>`).join('')}
+      ${p.notifications.map(n=>`<div class="hint">${esc(n.channel==='email'?'Email':n.channel || 'Notification')} &middot; ${esc(n.recipientRole)} &middot; ${esc(n.to)} · ${n.delivered ? 'Accepted' : 'Failed'}${n.subject?` &middot; ${esc(n.subject)}`:''}${n.error?` — ${esc(n.error)}`:''}</div>`).join('')}
     </div>` : ''}
     <div class="section-head" style="margin-top:16px;">
       <h2 style="font-size:13px;">Full history</h2>

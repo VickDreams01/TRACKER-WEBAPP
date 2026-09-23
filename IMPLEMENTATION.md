@@ -31,3 +31,7 @@ Before live use, follow README setup and run its real-service acceptance checkli
 - `npm run check`: all five edge functions passed Deno type checking.
 
 The browser runs cover setup mode, demo booking → warehouse → dispatch → delivery, and configured login → protected data load → logout/cache clearing. The configured backend is an HTTP fixture, not a deployed Supabase project.
+
+## Email-only notifications
+
+Tracking messages now use email only, for both booking and the manual send action. Removed the SMS sender and provider configuration; demo previews and UI instructions also use email only. Phone numbers remain delivery contact information. Existing historical notification records are preserved with their original channel labels.

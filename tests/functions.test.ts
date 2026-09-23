@@ -85,3 +85,68 @@ Deno.test('booking retries return the existing parcel without inserting another'
     assert(result.status===200);assert((await result.json()).tn==='STK-EXISTING');assert(writes===0);
   }finally{globalThis.fetch=originalFetch;}
 });
+Deno.test('tracking notifications email contacts only and skip phone-only bookings',async()=>{
+  const {notifyParcel}=await import('../supabase/functions/_shared/notifyParcel.ts');
+  const savedKey=Deno.env.get('RESEND_API_KEY');
+  const savedFrom=Deno.env.get('RESEND_FROM');
+  Deno.env.set('RESEND_API_KEY','fixture-email-key');
+  Deno.env.set('RESEND_FROM','tracking@example.com');
+  const requests:{url:string;to:string[]}[]=[];
+  const logs:Record<string,unknown>[]=[];
+  const admin={
+    from:()=>({insert:async(row:{data:Record<string,unknown>})=>{logs.push(row.data);return {error:null};}}),
+    rpc:async()=>({error:null}),
+  } as unknown as Parameters<typeof notifyParcel>[0];
+  globalThis.fetch=async(input,options)=>{
+    const body=JSON.parse(String(options?.body));
+    requests.push({url:String(input),to:body.to});
+    return new Response(JSON.stringify({id:'email-id'}),{status:200});
+  };
+  try{
+    const sent=await notifyParcel(admin,'STK-EMAIL',{
+      sender:{email:'sender@example.com',phone:'08012345678'},
+      receiver:{email:'receiver@example.com',phone:'08023456789'},
+    },{});
+    assert(sent.length===2);
+    assert(sent.every(n=>n.channel==='email' && n.delivered===true));
+    assert(requests.length===2 && requests.every(r=>r.url==='https://api.resend.com/emails'));
+    assert(requests[0].to[0]==='sender@example.com' && requests[1].to[0]==='receiver@example.com');
+    assert(logs.length===2 && logs.every(n=>n.channel==='email'));
+    const skipped=await notifyParcel(admin,'STK-PHONE',{
+      sender:{phone:'08012345678'},receiver:{phone:'08023456789'},
+    },{});
+    assert(skipped.length===0 && requests.length===2 && logs.length===2);
+  }finally{
+    globalThis.fetch=originalFetch;
+    if(savedKey===undefined) Deno.env.delete('RESEND_API_KEY'); else Deno.env.set('RESEND_API_KEY',savedKey);
+    if(savedFrom===undefined) Deno.env.delete('RESEND_FROM'); else Deno.env.set('RESEND_FROM',savedFrom);
+  }
+});
+Deno.test('email failures explain missing hosted settings and provider restrictions without leaking credentials',async()=>{
+  const {sendEmail}=await import('../supabase/functions/_shared/notify.ts');
+  const savedKey=Deno.env.get('RESEND_API_KEY');
+  const savedFrom=Deno.env.get('RESEND_FROM');
+  try{
+    Deno.env.delete('RESEND_API_KEY');Deno.env.delete('RESEND_FROM');
+    let calls=0;
+    globalThis.fetch=async()=>{calls++;throw new Error('should not fetch');};
+    const missing=await sendEmail({to:'recipient@example.com',subject:'Test',body:'Test'});
+    assert(!missing.ok && missing.error?.includes('Supabase secrets') && calls===0);
+    Deno.env.set('RESEND_API_KEY','re_fixture_secret');Deno.env.set('RESEND_FROM','sender@example.com');
+    for(const [status,message,expected] of [
+      [403,'You can only send testing emails to your own email address','test sending'],
+      [403,'The example.com domain is not verified','domain is not verified'],
+      [401,'API key is invalid re_fixture_secret','rejected the API key'],
+      [429,'Too many requests','sending limit'],
+    ] as const){
+      globalThis.fetch=async()=>new Response(JSON.stringify({message}),{status});
+      const result=await sendEmail({to:'recipient@example.com',subject:'Test',body:'Test'});
+      assert(!result.ok && result.error?.includes(expected));
+      assert(!result.error?.includes('re_fixture_secret'));
+    }
+  }finally{
+    globalThis.fetch=originalFetch;
+    if(savedKey===undefined) Deno.env.delete('RESEND_API_KEY'); else Deno.env.set('RESEND_API_KEY',savedKey);
+    if(savedFrom===undefined) Deno.env.delete('RESEND_FROM'); else Deno.env.set('RESEND_FROM',savedFrom);
+  }
+});

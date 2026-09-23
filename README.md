@@ -28,7 +28,7 @@ npx supabase db push
 npx supabase functions deploy
 ```
 
-Run these commands from `stallionking-backend/`. If using the dashboard SQL editor instead, run `0001_init.sql` and then `0002_workflows.sql`, once each, in order. Do not rerun the original migration after the second migration: it contains the original permissive policies which the second migration replaces.
+Run these commands from the `TRACKER-WEBAPP/` project root. If using the dashboard SQL editor instead, run `0001_init.sql` and then `0002_workflows.sql`, once each, in order. Do not rerun the original migration after the second migration: it contains the original permissive policies which the second migration replaces.
 
 The function configuration disables the gateway's legacy JWT check; each private handler independently verifies the bearer token with Supabase Auth and checks the account is an active staff member. `track` is the public GET endpoint. This supports publishable keys and newer signing keys. See the official [API-key migration guide](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys), [deployment guide](https://supabase.com/docs/guides/functions/deploy), and [database migration workflow](https://supabase.com/docs/guides/local-development/cli-workflows).
 
@@ -68,20 +68,22 @@ Refresh the app and sign in with the administrator you created. Add riders from 
 
 ## Enable tracking messages
 
-Create a Resend account with a verified sender domain and a Termii account with an approved sender ID. Configure their credentials as server secrets, using a local ignored file such as `.env.providers`:
+Tracking notifications are email-only. Create a Resend account with a verified sender domain. Configure these two credentials as server secrets, using a local ignored file such as `.env.providers`:
 
 ```dotenv
 RESEND_API_KEY=your_key
 RESEND_FROM=Stallionking Tracker <tracking@your-domain.example>
-TERMII_API_KEY=your_key
-TERMII_SENDER_ID=YourSender
 ```
 
 ```sh
 npx supabase secrets set --env-file .env.providers
 ```
 
-**Save Parcel** saves without sending. **Save & Send Tracking ID** attempts messages to supplied sender/receiver contacts. The confirmation distinguishes provider acceptance from failure; acceptance is not proof of final delivery. Admin parcel details include a **Send tracking ID** button for sending later or retrying failed sends. Each click sends to all supplied contacts, so use it deliberately. Missing provider keys do not prevent booking.
+If you saved these two settings in the root `.env` instead, upload them with `npx supabase secrets set --env-file .env`. Hosted functions do not read your computer's `.env` automatically. Upload only provider settings, not unrelated credentials. Secret changes apply without redeploying functions. Deploy code changes separately with `npx supabase functions deploy book-parcel` and `npx supabase functions deploy notify-parcel`.
+
+If email fails, the confirmation displays the reason for new attempts. Check that the sending domain is verified in Resend and that `RESEND_FROM` uses that domain. Resend's test sender restricts recipients. Use **Send tracking ID** on the existing parcel after fixing the settings; you do not need to book it again.
+
+**Save Parcel** saves without sending. **Save & Send Tracking ID** emails the supplied sender/receiver email addresses. The confirmation distinguishes provider acceptance from failure; acceptance is not proof of final delivery. Admin parcel details include a **Send tracking ID** button for sending later or retrying failed sends. Each click emails all supplied email addresses, so use it deliberately. Phone numbers remain available for delivery coordination but are never used for notifications. If neither contact has an email address, the parcel is still saved and no notification is sent. Missing provider keys do not prevent booking.
 
 ## Host the frontend
 
@@ -106,7 +108,7 @@ PGlite executes the schema and RLS/workflow functions with simulated Auth identi
 3. Look up that number in a signed-out browser. Only route, service and progress should be visible.
 4. Create a staff account, deactivate it, and confirm it can no longer read or change operational records.
 5. Submit a deletion request as staff; approve it as admin. Test an exception and rebooking on a separate parcel.
-6. Send a tracking message to a real test inbox/phone and confirm arrival. Review provider logs for any rejected messages.
+6. Send a tracking message to a real test inbox and confirm arrival. Review provider logs for any rejected messages.
 
 ## Operational behavior and limits
 
